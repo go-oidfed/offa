@@ -10,8 +10,8 @@ import (
 	"github.com/go-oidfed/lib"
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/zachmann/go-utils/sliceutils"
 
-	"github.com/go-oidfed/offa/internal"
 	"github.com/go-oidfed/offa/internal/cache"
 	"github.com/go-oidfed/offa/internal/config"
 	"github.com/go-oidfed/offa/internal/model"
@@ -123,7 +123,7 @@ func verifyUser(
 			}
 			claimValues, ok := claims.GetStringSlice(claim)
 			if ok {
-				if internal.SliceIsSubsetOf(claimRequires, claimValues) {
+				if sliceutils.IsSubsetOf(claimRequires, claimValues) {
 					continue
 				} else {
 					optionFailed = true

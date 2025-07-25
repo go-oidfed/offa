@@ -12,8 +12,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/lestrrat-go/jwx/v3/jws"
 	log "github.com/sirupsen/logrus"
+	zutils "github.com/zachmann/go-utils"
+	"github.com/zachmann/go-utils/ctxutils"
 
-	"github.com/go-oidfed/offa/internal"
 	"github.com/go-oidfed/offa/internal/cache"
 	"github.com/go-oidfed/offa/internal/config"
 	"github.com/go-oidfed/offa/internal/model"
@@ -32,9 +33,9 @@ func addLoginHandlers(s fiber.Router) {
 	path := config.Get().Server.Paths.Login
 	s.Get(
 		path, func(c *fiber.Ctx) error {
-			opID := internal.FirstNonEmptyQueryParameter(c, "iss", "op", "entity_id", "entity", "issuer")
+			opID := ctxutils.FirstNonEmptyQueryParameter(c, "iss", "op", "entity_id", "entity", "issuer")
 			if opID != "" {
-				next := internal.FirstNonEmptyQueryParameter(c, "target_link_uri", "next")
+				next := ctxutils.FirstNonEmptyQueryParameter(c, "target_link_uri", "next")
 				return doLogin(c, opID, next, c.Query("login_hint"))
 			}
 			return showLoginPage(c)
@@ -177,7 +178,7 @@ type stateData struct {
 }
 
 func doLogin(c *fiber.Ctx, opID, next, loginHint string) error {
-	r, err := internal.RandomString(256)
+	r, err := zutils.RandomString(256)
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return renderError(c, "internal server error", err.Error())
@@ -290,7 +291,7 @@ func codeExchange(c *fiber.Ctx) error {
 	log.Debugf("Userclaims are: %+v", idTokenData)
 	//TODO userinfo endpoint
 
-	sessionID, err := internal.RandomString(128)
+	sessionID, err := zutils.RandomString(128)
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return renderError(c, "internal server error", err.Error())
