@@ -4,11 +4,15 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
+	"time"
 
 	"github.com/go-oidfed/lib"
+	"github.com/go-oidfed/lib/jwx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/zachmann/go-utils/duration"
 	"gopkg.in/yaml.v3"
 
 	"github.com/go-oidfed/offa/internal/model"
@@ -28,7 +32,14 @@ type Config struct {
 	Federation     federationConf `yaml:"federation"`
 	Auth           authConf       `yaml:"auth"`
 	SessionStorage sessionConf    `yaml:"sessions"`
+	Signing        signingConf    `yaml:"signing"`
 	DebugAuth      bool           `yaml:"debug_auth"`
+}
+
+type signingConf struct {
+	KeyStorage string               `yaml:"key_storage"`
+	Federation jwx.KeyStorageConfig `yaml:"federation"`
+	OIDC       jwx.KeyStorageConfig `yaml:"oidc"`
 }
 
 type federationConf struct {
@@ -52,12 +63,13 @@ type federationConf struct {
 	ExtraRPMetadata              map[string]any `yaml:"extra_rp_metadata"`
 	ExtraEntityConfigurationData map[string]any `yaml:"extra_entity_configuration_data"`
 
+	ConfigurationLifetime       duration.DurationOption                      `yaml:"configuration_lifetime"`
 	KeyStorage                  string                                       `yaml:"key_storage"`
 	OnlyAutomaticOPs            bool                                         `yaml:"filter_to_automatic_ops"`
 	TrustMarks                  []*oidfed.EntityConfigurationTrustMarkConfig `yaml:"trust_marks"`
 	UseResolveEndpoint          bool                                         `yaml:"use_resolve_endpoint"`
 	UseEntityCollectionEndpoint bool                                         `yaml:"use_entity_collection_endpoint"`
-	EntityCollectionInterval    int64                                        `yaml:"entity_collection_interval"`
+	EntityCollectionInterval    duration.DurationOption                      `yaml:"entity_collection_interval"`
 }
 
 type sessionConf struct {
@@ -304,14 +316,59 @@ func MustLoadConfig() {
 			CookieName: "offa-session",
 		},
 		Federation: federationConf{
-			EntityCollectionInterval: 5,
+			EntityCollectionInterval: duration.DurationOption(5 * time.Minute),
+			ConfigurationLifetime:    duration.DurationOption(24 * time.Hour),
+		},
+		Signing: signingConf{
+			Federation: jwx.KeyStorageConfig{
+				Algorithm: "ES512",
+				RSAKeyLen: 2048,
+				RolloverConf: jwx.RolloverConf{
+					Enabled:  false,
+					Interval: 600000,
+				},
+			},
+			OIDC: jwx.KeyStorageConfig{
+				DefaultAlgorithm: "ES512",
+				RSAKeyLen:        2048,
+				RolloverConf: jwx.RolloverConf{
+					Enabled:  false,
+					Interval: 600000,
+				},
+			},
 		},
 	}
 	if err := yaml.Unmarshal(data, conf); err != nil {
 		log.Fatal(err)
 	}
-	if conf.Federation.KeyStorage == "" {
-		log.Fatal("key_storage must be given")
+	if conf.Federation.KeyStorage != "" {
+		log.Warn("federation.key_storage is deprecated; use signing.key_storage instead")
+		if conf.Signing.KeyStorage == "" {
+			conf.Signing.KeyStorage = conf.Federation.KeyStorage
+			oldSigningKeyFileToNewFiles := map[string]string{
+				filepath.Join(conf.Federation.KeyStorage, "oidc.signing.key"): filepath.Join(
+					conf.Federation.KeyStorage, "oidc_ES512.pem",
+				),
+				filepath.Join(conf.Federation.KeyStorage, "fed.signing.key"): filepath.Join(
+					conf.Federation.KeyStorage, "federation_ES512.pem",
+				),
+			}
+			for oldKF, newKF := range oldSigningKeyFileToNewFiles {
+				if fileExists(oldKF) && !fileExists(newKF) {
+					os.Rename(oldKF, newKF)
+				}
+			}
+		}
+	}
+	if conf.Signing.KeyStorage == "" {
+		log.Fatal("signing.key_storage must be given")
+	}
+	d, err := os.Stat(conf.Signing.KeyStorage)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !d.IsDir() {
+		log.Fatalf("key_storage '%s' must be a directory", conf.Federation.KeyStorage)
 	}
 	if conf.Federation.ClientName == "" {
 		conf.Federation.ClientName = conf.Federation.DisplayName
@@ -325,12 +382,14 @@ func MustLoadConfig() {
 	if conf.Federation.LogoURI == "" {
 		conf.Federation.LogoURI = conf.Federation.EntityID + "/static/img/offa-text.svg"
 	}
-	d, err := os.Stat(conf.Federation.KeyStorage)
-	if err != nil {
-		log.Fatal(err)
+	if conf.Signing.Federation.RolloverConf.Interval < conf.Federation.ConfigurationLifetime {
+		conf.Signing.Federation.RolloverConf.Interval = conf.Federation.ConfigurationLifetime
 	}
-	if !d.IsDir() {
-		log.Fatalf("key_storage '%s' must be a directory", conf.Federation.KeyStorage)
+	if conf.Signing.OIDC.RolloverConf.Interval < conf.Federation.ConfigurationLifetime {
+		conf.Signing.OIDC.RolloverConf.Interval = conf.Federation.ConfigurationLifetime
+	}
+	if conf.Federation.UseEntityCollectionEndpoint && conf.Federation.EntityCollectionInterval.Duration() < time.Minute {
+		log.Fatal("federation.use_entity_collection_interval must be at least 1 minute")
 	}
 	if err = validate(); err != nil {
 		log.Fatalf("%s", err)

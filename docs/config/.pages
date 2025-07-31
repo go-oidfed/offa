@@ -2,6 +2,7 @@ arrange:
   - index.md
   - server.md
   - logging.md
+  - signing.md
   - federation.md
   - auth.md
   - sessions.md

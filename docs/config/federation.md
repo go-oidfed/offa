@@ -132,44 +132,26 @@ published in the OpenID Federation Entity Configuration.
         organization_name: Example Organization
     ```
 
-## `key_storage`
-<span class="badge badge-purple" title="Value Type">directoy path</span>
-<span class="badge badge-red" title="If this option is required or optional">required</span>
+## `configuration_lifetime`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">1 day</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
 
-The `key_storage` option is used to set a directory where signing keys are 
-stored. To provide a pre-created signing key to OFFA place it in this 
-directory. OFFA will use the signing key from the file `fed.signing.key` as 
-the federation signing key and the key from the file `oidc.signing.key` for 
-the OIDC related signing.
-
-!!! tip
-    
-    Currently only the `ES512` signing algorithm is supported. OFFA will 
-    support additional keys in the future. But currently the key must use the 
-    `P-521` curve.
-
-    Also the private key must be PEM encoded. One does not need to provide a 
-    public key. The public key is derived from the private key.
-
-    ??? example "Example Private Key"
-
-        ```pem
-        -----BEGIN EC PRIVATE KEY-----
-        MIHcAgEBBEIBSH8dWhCVW1eBH6wubSLpdv3kqLpIFk8zkbdtWU43YCKaWa0GhSOG
-        88yp6j2FmrXyte7v69FtBvKS08mGWEdD+gugBwYFK4EEACOhgYkDgYYABAHVNodZ
-        NZeQcXKnwNqb8dWFcZaAYxRb7Iq3NCRpbKXaaVLS+5+s+Rmvh7BpIuOBMXxCmWe3
-        WMB7tQrXYueoaGnvrQA4D9ZSoGBZv0ZXh4w5q6Op2LNya5aEwJejvrSCyRyRqgUZ
-        jABzf/DoMvsjNfroP5SizcfYeRUB2L4A1Tn1BPbsRQ==
-        -----END EC PRIVATE KEY-----
-        ```
-
+The `configuration_lifetime` option sets the lifetime of Entity Configurations, i.e. this options defines for how long
+the Entity Configuration JWTs are valid.
 
 ??? file "config.yaml"
 
     ```yaml
     federation:
-        key_storage: /data
+        configuration_lifetime: 1w
     ```
+`
+
+## `key_storage`
+<span class="badge badge-red">deprecated</span>
+
+The `key_storage` option is deprecated. Use [`signing.key_storage`](signing.md) instead.
 
 ## `filter_to_automatic_ops`
 <span class="badge badge-purple" title="Value Type">boolean</span>
@@ -312,18 +294,17 @@ It is generally more performant to rely on an external endpoint.
 
 
 ## `entity_collection_interval`
-<span class="badge badge-purple" title="Value Type">integer</span>
-<span class="badge badge-blue" title="Default Value">5</span>
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">5 minutes</span>
 <span class="badge badge-green" title="If this option is required or optional">optional</span>
 
 The `entity_collection_interval` option defines in which interval OFFA will 
-query the Entity Collection Endpoint or do entity collection on its own. The 
-time is given in minutes!
+query the Entity Collection Endpoint or do entity collection on its own.
 
 ??? file "config.yaml"
 
     ```yaml
     federation:
-        entity_collection_interval: 60
+        entity_collection_interval: 1h
     ```
 

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/go-oidfed/lib"
+	"github.com/go-oidfed/lib/jwx"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lestrrat-go/jwx/v3/jwa"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/go-oidfed/offa/internal"
@@ -28,7 +28,6 @@ var serverConfig = fiber.Config{
 }
 
 var federationLeafEntity *oidfed.FederationLeaf
-var requestObjectProducer *oidfed.RequestObjectProducer
 var scopes string
 var redirectURI string
 var fullLoginPath string
@@ -60,9 +59,6 @@ func initFederationEntity() {
 	if scopes == "" {
 		scopes = "openid profile email"
 	}
-	requestObjectProducer = oidfed.NewRequestObjectProducer(
-		fedConfig.EntityID, internal.GetKey(internal.OIDCSigningKeyName), jwa.ES512(), 60,
-	)
 
 	metadata := &oidfed.Metadata{
 		RelyingParty: &oidfed.OpenIDRelyingPartyMetadata{
@@ -78,13 +74,14 @@ func initFederationEntity() {
 			PolicyURI:                   fedConfig.PolicyURI,
 			TOSURI:                      fedConfig.TOSURI,
 			TokenEndpointAuthMethod:     "private_key_jwt",
-			TokenEndpointAuthSigningAlg: jwa.ES512().String(),
+			TokenEndpointAuthSigningAlg: config.Get().Signing.OIDC.DefaultAlgorithm,
+			UserinfoSignedResponseAlg:   config.Get().Signing.OIDC.DefaultAlgorithm,
+			IDTokenSignedResponseAlg:    config.Get().Signing.OIDC.DefaultAlgorithm,
 			InitiateLoginURI:            fullLoginPath,
 			SoftwareID:                  version.SOFTWAREID,
 			SoftwareVersion:             version.VERSION,
 			ClientRegistrationTypes:     []string{"automatic"},
 			Extra:                       fedConfig.ExtraRPMetadata,
-			JWKS:                        internal.GetJWKS(internal.OIDCSigningKeyName),
 			DisplayName:                 fedConfig.DisplayName,
 			Description:                 fedConfig.Description,
 			Keywords:                    fedConfig.Keywords,
@@ -97,6 +94,14 @@ func initFederationEntity() {
 			LogoURI:          fedConfig.LogoURI,
 		},
 	}
+	if metadata.RelyingParty.Extra == nil {
+		metadata.RelyingParty.Extra = make(map[string]any)
+	}
+	metadata.RelyingParty.Extra["id_token_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
+	metadata.RelyingParty.Extra["userinfo_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
+	metadata.RelyingParty.Extra["request_object_alg_values_supported"] = jwx.SupportedAlgsStrings()
+	metadata.RelyingParty.Extra["token_endpoint_auth_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
+
 	if fedConfig.ExtraEntityConfigurationData == nil {
 		fedConfig.ExtraEntityConfigurationData = make(map[string]any)
 	}
@@ -104,16 +109,19 @@ func initFederationEntity() {
 	var err error
 	federationLeafEntity, err = oidfed.NewFederationLeaf(
 		fedConfig.EntityID, fedConfig.AuthorityHints, fedConfig.TrustAnchors, metadata,
-		oidfed.NewEntityStatementSigner(
-			internal.GetKey(internal.FedSigningKeyName),
-			jwa.ES512(),
-		), 86400, internal.GetKey(internal.OIDCSigningKeyName), jwa.ES512(),
+		jwx.NewEntityStatementSigner(
+			internal.FederationSigner(),
+		), fedConfig.ConfigurationLifetime.Duration(), internal.OIDCSigner(),
 		fedConfig.ExtraEntityConfigurationData,
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 	federationLeafEntity.TrustMarks = fedConfig.TrustMarks
+	federationLeafEntity.MetadataUpdater = func(metadata *oidfed.Metadata) {
+		jwks := internal.OIDCSigner().JWKS()
+		metadata.RelyingParty.JWKS = &jwks
+	}
 }
 
 func start(s *fiber.App) {
