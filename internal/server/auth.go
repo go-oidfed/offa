@@ -58,7 +58,7 @@ func addAuthHandlers(s fiber.Router) {
 			forPath := c.Get("X-Forwarded-Uri")
 
 			var rule *config.AuthRule
-			if forHost == "" && forPath == "/" {
+			if (forHost == "" || forHost == config.Get().Server.Host) && forPath == "/" {
 				rule = &config.AuthRule{
 					ForwardHeadersPrefix: "OIDC",
 				}

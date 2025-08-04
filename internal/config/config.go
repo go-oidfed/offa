@@ -185,6 +185,7 @@ type serverConf struct {
 	Secure          bool         `yaml:"-"`
 	Basepath        string       `yaml:"-"`
 	WebOverwriteDir string       `yaml:"web_overwrite_dir"`
+	Host            string       `yaml:"-"`
 }
 
 type pathConf struct {
@@ -289,6 +290,7 @@ func validate() error {
 		return err
 	}
 	conf.Server.Secure = u.Scheme == "https"
+	conf.Server.Host = u.Host
 	conf.Server.Basepath = u.Path
 	if conf.Server.Basepath != "" {
 		if conf.Server.Basepath[len(conf.Server.Basepath)-1] == '/' {
