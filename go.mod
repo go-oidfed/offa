@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
-	github.com/go-oidfed/lib v0.5.1-0.20250731085549-da27a0dc1e2c
+	github.com/go-oidfed/lib v0.6.1-0.20250804083505-42494194b833
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/gofiber/template/mustache/v2 v2.0.14
 	github.com/lestrrat-go/jwx/v3 v3.0.9
