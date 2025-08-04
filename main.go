@@ -6,7 +6,7 @@ import (
 	"syscall"
 
 	"github.com/go-oidfed/lib"
-	"github.com/lestrrat-go/jwx/v3/jwa"
+	"github.com/go-oidfed/lib/jwx"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/go-oidfed/offa/internal"
@@ -21,11 +21,11 @@ func main() {
 	config.MustLoadConfig()
 	logger.Init()
 	cache.Init()
-	internal.InitKeys(internal.FedSigningKeyName, internal.OIDCSigningKeyName)
+	internal.InitKeys()
 	for _, c := range config.Get().Federation.TrustMarks {
 		if err := c.Verify(
 			config.Get().Federation.EntityID, "",
-			oidfed.NewTrustMarkSigner(internal.GetKey(internal.FedSigningKeyName), jwa.ES512()),
+			jwx.NewTrustMarkSigner(internal.FederationSigner()),
 		); err != nil {
 			log.Fatal(err)
 		}

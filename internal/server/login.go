@@ -63,7 +63,7 @@ type opOption struct {
 var opOptions []opOption
 
 func scheduleBuildOPOptions() {
-	ticker := time.NewTicker(time.Duration(config.Get().Federation.EntityCollectionInterval) * time.Minute) // Replace 5 with your desired interval
+	ticker := time.NewTicker(config.Get().Federation.EntityCollectionInterval.Duration())
 
 	go buildOPOptions()
 
