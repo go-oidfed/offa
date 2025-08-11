@@ -33,6 +33,115 @@ The `client_name` option is used to set a custom client name.
         client_name: My Service
     ```
 
+## `client_uri`
+<span class="badge badge-purple" title="Value Type">uri</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `client_uri` option is used to set a client URI to be published in the relying party metadata in the entity 
+configuration.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        client_uri: https://client.example.com
+    ```
+## `display_name`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `display_name` option is used to set a display name to be published in the relying party metadata.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        display_name: My Service Display Name
+    ```
+
+## `description`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `description` option is used to set a description to be published in the relying party metadata.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        description: This is a description of the service
+    ```
+
+## `keywords`
+<span class="badge badge-purple" title="Value Type">list of strings</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `keywords` option is used to set keywords to be published in the relying party metadata.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        keywords:
+            - service
+            - authentication
+            - federation
+    ```
+
+## `contacts`
+<span class="badge badge-purple" title="Value Type">list of strings</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `contacts` option is used to set contact information to be published in the relying party metadata.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        contacts:
+            - admin@example.com
+            - support@example.com
+    ```
+
+## `policy_uri`
+<span class="badge badge-purple" title="Value Type">uri</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `policy_uri` option is used to set a URI to the privacy policy to be published in the relying party metadata.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        policy_uri: https://example.com/privacy-policy
+    ```
+
+## `tos_uri`
+<span class="badge badge-purple" title="Value Type">uri</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `tos_uri` option is used to set a URI to the terms of service to be published in the relying party metadata.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        tos_uri: https://example.com/terms-of-service
+    ```
+
+## `information_uri`
+<span class="badge badge-purple" title="Value Type">uri</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `information_uri` option is used to set a URI to additional information about the service to be published in the relying party metadata.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        information_uri: https://example.com/info
+    ```
+
 ## `logo_uri`
 <span class="badge badge-purple" title="Value Type">uri</span>
 <span class="badge badge-blue" title="Default Value"><entity_id\>/static/img/offa-text.svg</span>
@@ -46,6 +155,63 @@ logo is used.
     ```yaml
     federation:
         logo_uri: https://static.example.com/logo.png
+    ```
+
+## `organization_name`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `organization_name` option is used to set the organization name
+published in the OpenID Federation Entity Configuration.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        organization_name: Example Organization
+    ```
+
+## `organization_uri`
+<span class="badge badge-purple" title="Value Type">uri</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `organization_uri` option is used to set a URI to the organization's website to be published in the relying party metadata.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        organization_uri: https://organization.example.com
+    ```
+
+## `extra_rp_metadata`
+<span class="badge badge-purple" title="Value Type">mapping / object</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `extra_rp_metadata` option is used to add custom key-value pairs to the relying party metadata in the entity configuration.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        extra_rp_metadata:
+            custom_field: custom_value
+            another_field: another_value
+    ```
+
+## `extra_entity_configuration_data`
+<span class="badge badge-purple" title="Value Type">mapping / object</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `extra_entity_configuration_data` option is used to add custom key-value pairs to the entity configuration.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        extra_entity_configuration_data:
+            custom_entity_field: custom_value
+            another_entity_field: another_value
     ```
 
 ## `scopes`
@@ -116,20 +282,6 @@ Entities that are direct superior to OFFA and that issue a statement about OFFA.
     federation:
         authority_hints:
             - https://ia.example.com
-    ```
-
-## `organization_name`
-<span class="badge badge-purple" title="Value Type">string</span>
-<span class="badge badge-green" title="If this option is required or optional">optional</span>
-
-The `organization_name` option is used to set the organization name 
-published in the OpenID Federation Entity Configuration.
-
-??? file "config.yaml"
-
-    ```yaml
-    federation:
-        organization_name: Example Organization
     ```
 
 ## `configuration_lifetime`
