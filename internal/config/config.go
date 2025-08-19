@@ -177,6 +177,7 @@ func (c authConf) FindRule(host, path string) *AuthRule {
 }
 
 type serverConf struct {
+	IPListen        string       `yaml:"ip_listen"`
 	Port            int          `yaml:"port"`
 	TLS             tlsConf      `yaml:"tls"`
 	TrustedProxies  []string     `yaml:"trusted_proxies"`
