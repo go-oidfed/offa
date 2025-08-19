@@ -38,6 +38,11 @@ func Init() {
 	scheduleBuildOPOptions()
 	initHtmls()
 	initFederationEntity()
+	if tps := config.Get().Server.TrustedProxies; len(tps) > 0 {
+		serverConfig.TrustedProxies = config.Get().Server.TrustedProxies
+		serverConfig.EnableTrustedProxyCheck = true
+	}
+	serverConfig.ProxyHeader = config.Get().Server.ForwardedIPHeader
 	server = fiber.New(serverConfig)
 	addMiddlewares(server)
 	addFederationEndpoints(server)

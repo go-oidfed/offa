@@ -1,7 +1,6 @@
 package config
 
 import (
-	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -177,16 +176,16 @@ func (c authConf) FindRule(host, path string) *AuthRule {
 }
 
 type serverConf struct {
-	IPListen        string       `yaml:"ip_listen"`
-	Port            int          `yaml:"port"`
-	TLS             tlsConf      `yaml:"tls"`
-	TrustedProxies  []string     `yaml:"trusted_proxies"`
-	TrustedNets     []*net.IPNet `yaml:"-"`
-	Paths           pathConf     `yaml:"paths"`
-	Secure          bool         `yaml:"-"`
-	Basepath        string       `yaml:"-"`
-	WebOverwriteDir string       `yaml:"web_overwrite_dir"`
-	Host            string       `yaml:"-"`
+	IPListen          string   `yaml:"ip_listen"`
+	Port              int      `yaml:"port"`
+	TLS               tlsConf  `yaml:"tls"`
+	TrustedProxies    []string `yaml:"trusted_proxies"`
+	ForwardedIPHeader string   `yaml:"forwarded_ip_header"`
+	Paths             pathConf `yaml:"paths"`
+	Secure            bool     `yaml:"-"`
+	Basepath          string   `yaml:"-"`
+	WebOverwriteDir   string   `yaml:"web_overwrite_dir"`
+	Host              string   `yaml:"-"`
 }
 
 type pathConf struct {
@@ -231,13 +230,6 @@ func checkLoggingDirExists(dir string) error {
 }
 
 func (c *serverConf) validate() error {
-	for _, cidr := range c.TrustedProxies {
-		_, ipnet, err := net.ParseCIDR(cidr)
-		if err != nil {
-			return errors.Wrapf(err, "invalid trusted proxy CIDR '%s'", cidr)
-		}
-		c.TrustedNets = append(c.TrustedNets, ipnet)
-	}
 	return nil
 }
 
@@ -308,7 +300,8 @@ func MustLoadConfig() {
 	data, _ := mustReadConfigFile("config.yaml", possibleConfigLocations)
 	conf = &Config{
 		Server: serverConf{
-			Port: 15661,
+			Port:              15661,
+			ForwardedIPHeader: "X-Forwarded-For",
 			Paths: pathConf{
 				Login:       "/login",
 				ForwardAuth: "/auth",

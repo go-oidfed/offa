@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,22 +15,6 @@ import (
 	"github.com/go-oidfed/offa/internal/config"
 	"github.com/go-oidfed/offa/internal/model"
 )
-
-func isTrustedIP(ipStr string) bool {
-	if len(config.Get().Server.TrustedNets) == 0 {
-		return true
-	}
-	ip := net.ParseIP(ipStr)
-	if ip == nil {
-		return false
-	}
-	for _, ipNet := range config.Get().Server.TrustedNets {
-		if ipNet.Contains(ip) {
-			return true
-		}
-	}
-	return false
-}
 
 func addAuthHandlers(s fiber.Router) {
 	path := config.Get().Server.Paths.ForwardAuth
@@ -48,9 +31,8 @@ func addAuthHandlers(s fiber.Router) {
 				}
 				fmt.Println("---")
 			}
-			clientIP := c.IP()
-			if !isTrustedIP(clientIP) {
-				log.WithField("ip", clientIP).Info("Blocked untrusted IP")
+			if !c.IsProxyTrusted() {
+				log.Info("Blocked untrusted IP")
 				return c.Status(fiber.StatusForbidden).SendString("Forbidden: Untrusted Proxy")
 			}
 
