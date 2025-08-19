@@ -89,10 +89,6 @@ func initFederationEntity() {
 			OrganizationName:            fedConfig.OrganizationName,
 			OrganizationURI:             fedConfig.OrganizationURI,
 		},
-		FederationEntity: &oidfed.FederationEntityMetadata{
-			OrganizationName: fedConfig.OrganizationName,
-			LogoURI:          fedConfig.LogoURI,
-		},
 	}
 	if metadata.RelyingParty.Extra == nil {
 		metadata.RelyingParty.Extra = make(map[string]any)
