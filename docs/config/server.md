@@ -105,6 +105,22 @@ accepted.
             - "fc00::/7"
     ```
 
+## `forwarded_ip_header`
+
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-blue" title="Default Value">`X-Forwarded-For`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `forwarded_ip_header` option specifies which HTTP header to use for getting the client's real IP address when behind
+a proxy.
+
+??? file "config.yaml"
+
+    ```yaml
+    server:
+        forwarded_ip_header: X-Real-IP
+    ```
+
 ## `paths`
 <span class="badge badge-purple" title="Value Type">mapping / object</span>
 <span class="badge badge-green" title="If this option is required or optional">optional</span>
