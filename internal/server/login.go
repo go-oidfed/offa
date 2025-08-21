@@ -164,6 +164,7 @@ func showLoginPage(c *fiber.Ctx) error {
 		c, "login", map[string]interface{}{
 			"client_name": config.Get().Federation.ClientName,
 			"logo_uri":    config.Get().Federation.LogoURI,
+			"login-path":  config.Get().Server.Paths.Login,
 			"ops":         opOptions,
 			"next":        c.Query("next"),
 		},
