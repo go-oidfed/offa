@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/zachmann/go-utils/duration"
+	"github.com/zachmann/go-utils/fileutils"
 	"gopkg.in/yaml.v3"
 
 	"github.com/go-oidfed/offa/internal/model"
@@ -223,7 +224,7 @@ type smartLoggerConf struct {
 }
 
 func checkLoggingDirExists(dir string) error {
-	if dir != "" && !fileExists(dir) {
+	if dir != "" && !fileutils.FileExists(dir) {
 		return errors.Errorf("logging directory '%s' does not exist", dir)
 	}
 	return nil
@@ -297,7 +298,10 @@ func validate() error {
 }
 
 func MustLoadConfig() {
-	data, _ := mustReadConfigFile("config.yaml", possibleConfigLocations)
+	data, _ := fileutils.ReadFileFromLocations("config.yaml", possibleConfigLocations)
+	if data == nil {
+		log.Fatal("config.yaml not found in any of the possible locations")
+	}
 	conf = &Config{
 		Server: serverConf{
 			Port:              15661,
@@ -350,7 +354,7 @@ func MustLoadConfig() {
 				),
 			}
 			for oldKF, newKF := range oldSigningKeyFileToNewFiles {
-				if fileExists(oldKF) && !fileExists(newKF) {
+				if fileutils.FileExists(oldKF) && !fileutils.FileExists(newKF) {
 					os.Rename(oldKF, newKF)
 				}
 			}

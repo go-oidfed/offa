@@ -15,7 +15,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/valyala/fasthttp v1.65.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
-	github.com/zachmann/go-utils v0.0.0-20250730083409-d07980e6b54b
+	github.com/zachmann/go-utils v0.0.0-20250822101349-8d87d7e5ab7e
 	gopkg.in/yaml.v3 v3.0.1
 )
 
