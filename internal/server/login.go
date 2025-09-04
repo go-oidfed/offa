@@ -17,9 +17,27 @@ import (
 
 	"github.com/go-oidfed/offa/internal/cache"
 	"github.com/go-oidfed/offa/internal/config"
+	ihttp "github.com/go-oidfed/offa/internal/http"
 	"github.com/go-oidfed/offa/internal/model"
 	"github.com/go-oidfed/offa/internal/pkce"
 )
+
+// normalizeClaims converts slice-like values to []string where reasonable.
+// This makes downstream processing consistent with GetString/GetStringSlice.
+func normalizeClaims(claims model.UserClaims) {
+	for k, v := range claims {
+		switch t := v.(type) {
+		case []any:
+			ss := make([]string, 0, len(t))
+			for _, e := range t {
+				if s, ok := e.(string); ok {
+					ss = append(ss, s)
+				}
+			}
+			claims[k] = ss
+		}
+	}
+}
 
 const browserStateCookieName = "_offa_auth_state"
 
@@ -282,22 +300,67 @@ func codeExchange(c *fiber.Ctx) error {
 	if err = cache.Set(cache.KeyStateData, state, nil, time.Nanosecond); err != nil {
 		log.WithError(err).Error("failed to clear state cache")
 	}
-	var idTokenData model.UserClaims
-	err = json.Unmarshal(msg.Payload(), &idTokenData)
+	var userData model.UserClaims
+	err = json.Unmarshal(msg.Payload(), &userData)
 	if err != nil {
 		c.Status(444)
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
 		return renderError(c, "error decoding id token", err.Error())
 	}
-	log.Debugf("Userclaims are: %+v", idTokenData)
-	//TODO userinfo endpoint
+	log.Debugf("Userclaims from id_token: %+v", userData)
+
+	// Query userinfo endpoint and merge claims with ID token
+	if tokenRes.AccessToken != "" {
+		opMetadata, err := federationLeafEntity.ResolveOPMetadata(stateInfo.Issuer)
+		if err != nil {
+			log.WithError(err).Warn("could not resolve OP metadata for userinfo endpoint")
+		} else if opMetadata.UserinfoEndpoint != "" {
+			resp, err := ihttp.Do().R().
+				SetHeader("Authorization", "Bearer "+tokenRes.AccessToken).
+				Get(opMetadata.UserinfoEndpoint)
+			if err != nil {
+				log.WithError(err).Warn("failed calling userinfo endpoint")
+			} else if resp.IsSuccess() {
+				body := resp.Body()
+				var userInfoData model.UserClaims
+				// Try plain JSON first
+				if err := json.Unmarshal(body, &userInfoData); err == nil {
+					normalizeClaims(userInfoData)
+					for k, v := range userInfoData {
+						userData[k] = v
+					}
+					log.Debugf("Merged userinfo (JSON) claims: %+v", userInfoData)
+				} else {
+					// Fallback: try signed JWT
+					if msg, jerr := jws.Parse(body); jerr == nil {
+						if err := json.Unmarshal(msg.Payload(), &userInfoData); err != nil {
+							log.WithError(err).Warn("failed unmarshalling userinfo JWT payload")
+						} else {
+							normalizeClaims(userInfoData)
+							for k, v := range userInfoData {
+								userData[k] = v
+							}
+							log.Debugf("Merged userinfo (JWT) claims: %+v", userInfoData)
+						}
+					} else {
+						log.WithError(err).WithField("jwt_err", jerr).Warn("failed parsing userinfo as JSON or JWT")
+					}
+				}
+			} else {
+				log.WithFields(log.Fields{"status": resp.StatusCode()}).Warn("userinfo endpoint returned non-200")
+			}
+		}
+	}
+
+	// Ensure array claims are normalized for later use
+	normalizeClaims(userData)
 
 	sessionID, err := zutils.RandomString(128)
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return renderError(c, "internal server error", err.Error())
 	}
-	if err = cache.SetSession(sessionID, idTokenData); err != nil {
+	if err = cache.SetSession(sessionID, userData); err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return renderError(c, "internal server error", err.Error())
 	}
