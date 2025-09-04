@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
+	"slices"
 
 	"github.com/go-oidfed/lib"
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/zachmann/go-utils/sliceutils"
+	utils "github.com/zachmann/go-utils/stringutils"
 
 	"github.com/go-oidfed/offa/internal/cache"
 	"github.com/go-oidfed/offa/internal/config"
@@ -129,12 +130,21 @@ func setHeaders(
 		headerClaims = config.DefaultForwardHeaders
 	}
 	if headerPrefix != "" {
+		ignoreClaims := []model.Claim{
+			"jti",
+			"at_hash",
+			"nonce",
+			"aud",
+		}
 		for claim := range userInfos {
+			if slices.Contains(ignoreClaims, claim) {
+				continue
+			}
 			value, ok := userInfos.GetForHeader(claim)
 			if !ok {
 				continue
 			}
-			c.Set(fmt.Sprintf("%s-%s", headerPrefix, strings.ToTitle(string(claim))), value)
+			c.Set(fmt.Sprintf("%s-%s", headerPrefix, utils.SnakeToCamel(string(claim))), value)
 		}
 	}
 	for header, claim := range headerClaims {
