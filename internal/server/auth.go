@@ -10,7 +10,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/zachmann/go-utils/sliceutils"
-	utils "github.com/zachmann/go-utils/stringutils"
 
 	"github.com/go-oidfed/offa/internal/cache"
 	"github.com/go-oidfed/offa/internal/config"
@@ -144,7 +143,7 @@ func setHeaders(
 			if !ok {
 				continue
 			}
-			c.Set(fmt.Sprintf("%s-%s", headerPrefix, utils.SnakeToCamel(string(claim))), value)
+			c.Set(fmt.Sprintf("%s-%s", headerPrefix, claim), value)
 		}
 	}
 	for header, claim := range headerClaims {
