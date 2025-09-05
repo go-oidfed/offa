@@ -51,6 +51,15 @@ type postLoginRequest struct {
 	TargetLinkURI string `json:"target_link_uri" form:"target_link_uri" query:"target_link_uri"`
 }
 
+const (
+	ctypeJSON = "application/json"
+	ctypeJWT  = "application/jwt"
+
+	claimIss = "iss"
+	claimAud = "aud"
+	claimExp = "exp"
+)
+
 func addLoginHandlers(s fiber.Router) {
 	path := config.Get().Server.Paths.Login
 	s.Get(
@@ -390,18 +399,18 @@ func validateStandardJWTClaims(payload []byte, expectedIssuer, expectedAud strin
 		err = errors.Wrap(err, "failed to unmarshal JWT payload for validation")
 		return
 	}
-	iss, ok := claims["iss"].(string)
+	iss, ok := claims[claimIss].(string)
 	if !ok || iss == "" {
-		err = errors.New("JWT missing 'iss' claim")
+		err = errors.Errorf("JWT missing '%s' claim", claimIss)
 		return
 	}
 	if iss != expectedIssuer {
-		err = errors.Errorf("JWT 'iss' mismatch: expected %s, got %s", expectedIssuer, iss)
+		err = errors.Errorf("JWT '%s' mismatch: expected %s, got %s", claimIss, expectedIssuer, iss)
 		return
 	}
-	aud, ok := claims["aud"]
+	aud, ok := claims[claimAud]
 	if !ok {
-		err = errors.New("JWT missing 'aud' claim")
+		err = errors.Errorf("JWT missing '%s' claim", claimAud)
 		return
 	}
 	okAud := false
@@ -426,7 +435,7 @@ func validateStandardJWTClaims(payload []byte, expectedIssuer, expectedAud strin
 		err = errors.New("JWT 'aud' does not contain our entity id")
 		return
 	}
-	if expRaw, ok := claims["exp"]; ok {
+	if expRaw, ok := claims[claimExp]; ok {
 		var expUnix int64
 		switch x := expRaw.(type) {
 		case float64:
@@ -475,12 +484,12 @@ func mergeUserinfoClaims(issuer, accessToken string, userData model.UserClaims) 
 	body := resp.Body()
 	var userInfoData model.UserClaims
 	switch mt {
-	case "application/json":
+	case ctypeJSON:
 		if err = json.Unmarshal(body, &userInfoData); err != nil {
 			log.WithError(err).Error("failed parsing userinfo as application/json")
 			return
 		}
-	case "application/jwt":
+	case ctypeJWT:
 		keySet, kerr := getOPKeySet(opMetadata)
 		if kerr != nil {
 			log.WithError(kerr).Error("could not get OP key set for userinfo verification")
