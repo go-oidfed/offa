@@ -355,7 +355,7 @@ func parseIDToken(issuer string, idToken string) (model.UserClaims, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "could not resolve OP key set for id_token validation")
 	}
-	payload, err := jws.Verify([]byte(idToken), jws.WithKeySet(keySet))
+	payload, err := jws.Verify([]byte(idToken), jws.WithKeySet(keySet, jws.WithInferAlgorithmFromKey(true)))
 	if err != nil {
 		return nil, errors.Wrap(err, "id_token signature verification failed")
 	}
@@ -495,7 +495,7 @@ func mergeUserinfoClaims(issuer, accessToken string, userData model.UserClaims) 
 			log.WithError(kerr).Error("could not get OP key set for userinfo verification")
 			return
 		}
-		payload, verr := jws.Verify(body, jws.WithKeySet(keySet))
+		payload, verr := jws.Verify(body, jws.WithKeySet(keySet, jws.WithInferAlgorithmFromKey(true)))
 		if verr != nil {
 			log.WithError(verr).Error("userinfo JWT signature verification failed")
 			return
