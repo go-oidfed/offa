@@ -82,9 +82,13 @@ type opOption struct {
 var opOptions []opOption
 
 func scheduleBuildOPOptions() {
-	ticker := time.NewTicker(config.Get().Federation.EntityCollectionInterval.Duration())
+	conf := config.Get().OPDiscovery.Local
+	if !conf.Enabled {
+		return
+	}
+	ticker := time.NewTicker(conf.EntityCollectionInterval.Duration())
 
-	go buildOPOptions()
+	buildOPOptions()
 
 	go func() {
 		for range ticker.C {
@@ -99,7 +103,7 @@ func buildOPOptions() {
 	var options []opOption
 	for _, ta := range config.Get().Federation.TrustAnchors {
 		var collector oidfed.EntityCollector
-		if config.Get().Federation.UseEntityCollectionEndpoint {
+		if config.Get().OPDiscovery.Local.UseEntityCollectionEndpoint {
 			collector = oidfed.SmartRemoteEntityCollector{TrustAnchors: config.Get().Federation.TrustAnchors.EntityIDs()}
 		} else {
 			collector = &oidfed.SimpleEntityCollector{}
@@ -184,8 +188,11 @@ func showLoginPage(c *fiber.Ctx) error {
 			"client_name": config.Get().Federation.ClientName,
 			"logo_uri":    config.Get().Federation.LogoURI,
 			"login-path":  config.Get().Server.Paths.Login,
+			"login-url":   fullLoginPath,
+			"entity-id":   config.Get().Federation.EntityID,
 			"ops":         opOptions,
 			"next":        c.Query("next"),
+			"conf":        config.Get().OPDiscovery,
 		},
 	)
 }
