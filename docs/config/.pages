@@ -3,6 +3,7 @@ arrange:
   - server.md
   - logging.md
   - signing.md
+  - op_discovery.md
   - federation.md
   - auth.md
   - sessions.md

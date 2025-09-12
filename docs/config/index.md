@@ -59,6 +59,7 @@ The following is a small example config file:
 - [:material-script-text: Logging](logging.md)
 - [:material-signature-freehand: Signing](signing.md)
 - [:simple-openid: Federation](federation.md)
+- [:material-binoculars: OP Discovery](op_discovery.md)
 - [:material-security: Auth](auth.md)
 - [:material-cookie: Sessions](sessions.md)
 - [:fontawesome-solid-person-digging: `debug_auth`](debug_auth.md)
