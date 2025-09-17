@@ -1,8 +1,6 @@
 module github.com/go-oidfed/offa
 
-go 1.24.0
-
-toolchain go1.24.1
+go 1.24.4
 
 require (
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
@@ -10,7 +8,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/gofiber/template/mustache/v2 v2.0.14
-	github.com/lestrrat-go/jwx/v3 v3.0.10
+	github.com/lestrrat-go/jwx/v3 v3.0.11
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.14.0
 	github.com/sirupsen/logrus v1.9.3
@@ -38,6 +36,8 @@ require (
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.4 // indirect
+	github.com/lestrrat-go/dsig v1.0.0 // indirect
+	github.com/lestrrat-go/dsig-secp256k1 v1.0.0 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc/v3 v3.0.1 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
