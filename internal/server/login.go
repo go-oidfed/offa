@@ -2,7 +2,9 @@ package server
 
 import (
 	"encoding/json"
+	"mime"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 
@@ -10,6 +12,7 @@ import (
 	"github.com/go-oidfed/lib/apimodel"
 	"github.com/go-oidfed/lib/oidfedconst"
 	"github.com/gofiber/fiber/v2"
+	"github.com/lestrrat-go/jwx/v3/jwk"
 	"github.com/lestrrat-go/jwx/v3/jws"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -47,6 +50,15 @@ type postLoginRequest struct {
 	LoginHint     string `json:"login_hint" form:"login_hint" query:"login_hint"`
 	TargetLinkURI string `json:"target_link_uri" form:"target_link_uri" query:"target_link_uri"`
 }
+
+const (
+	ctypeJSON = "application/json"
+	ctypeJWT  = "application/jwt"
+
+	claimIss = "iss"
+	claimAud = "aud"
+	claimExp = "exp"
+)
 
 func addLoginHandlers(s fiber.Router) {
 	path := config.Get().Server.Paths.Login
@@ -275,8 +287,8 @@ func codeExchange(c *fiber.Ctx) error {
 
 	clearState(c, state)
 
-	// Parse ID token payload to initial user claims
-	userData, err := parseIDToken(tokenRes.IDToken)
+	// Verify and parse ID token to initial user claims
+	userData, err := parseIDToken(stateInfo.Issuer, tokenRes.IDToken)
 	if err != nil {
 		c.Status(444)
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
@@ -334,16 +346,115 @@ func performCodeExchange(issuer, code, codeVerifier string) (*oidfed.OIDCTokenRe
 	return tokenRes, nil
 }
 
-func parseIDToken(idToken string) (model.UserClaims, error) {
-	msg, err := jws.ParseString(idToken)
+func parseIDToken(issuer string, idToken string) (model.UserClaims, error) {
+	opMetadata, err := federationLeafEntity.ResolveOPMetadata(issuer)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "could not resolve OP metadata for id_token validation")
 	}
-	var userData model.UserClaims
-	if err := json.Unmarshal(msg.Payload(), &userData); err != nil {
-		return nil, err
+	keySet, err := getOPKeySet(opMetadata)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not resolve OP key set for id_token validation")
 	}
-	return userData, nil
+	payload, err := jws.Verify([]byte(idToken), jws.WithKeySet(keySet, jws.WithInferAlgorithmFromKey(true)))
+	if err != nil {
+		return nil, errors.Wrap(err, "id_token signature verification failed")
+	}
+	// Validate standard claims
+	return validateStandardJWTClaims(payload, opMetadata.Issuer, federationLeafEntity.EntityID)
+}
+
+// getOPKeySet returns the jwk.Set for the given OP metadata using embedded JWKS if
+// available, otherwise fetching from JWKSURI.
+func getOPKeySet(opMetadata *oidfed.OpenIDProviderMetadata) (jwk.Set, error) {
+	if opMetadata == nil {
+		return nil, errors.New("opMetadata is nil")
+	}
+	if opMetadata.JWKS != nil && opMetadata.JWKS.Set != nil && opMetadata.JWKS.Len() > 0 {
+		return opMetadata.JWKS.Set, nil
+	}
+	if opMetadata.JWKSURI != "" {
+		jwksResp, err := ihttp.Do().R().Get(opMetadata.JWKSURI)
+		if err != nil {
+			return nil, err
+		}
+		if !jwksResp.IsSuccess() {
+			return nil, errors.Errorf("jwks_uri fetch returned status %d", jwksResp.StatusCode())
+		}
+		set, err := jwk.Parse(jwksResp.Body())
+		if err != nil {
+			return nil, err
+		}
+		return set, nil
+	}
+	return nil, errors.New("no JWKS or jwks_uri available on OP metadata")
+}
+
+// validateStandardJWTClaims checks iss equals expectedIssuer, aud contains expectedAud,
+// and exp (if present) is in the future.
+func validateStandardJWTClaims(payload []byte, expectedIssuer, expectedAud string) (
+	claims model.UserClaims,
+	err error,
+) {
+	if err = json.Unmarshal(payload, &claims); err != nil {
+		err = errors.Wrap(err, "failed to unmarshal JWT payload for validation")
+		return
+	}
+	iss, ok := claims[claimIss].(string)
+	if !ok || iss == "" {
+		err = errors.Errorf("JWT missing '%s' claim", claimIss)
+		return
+	}
+	if iss != expectedIssuer {
+		err = errors.Errorf("JWT '%s' mismatch: expected %s, got %s", claimIss, expectedIssuer, iss)
+		return
+	}
+	aud, ok := claims[claimAud]
+	if !ok {
+		err = errors.Errorf("JWT missing '%s' claim", claimAud)
+		return
+	}
+	okAud := false
+	switch v := aud.(type) {
+	case string:
+		okAud = v == expectedAud
+	case []any:
+		for _, e := range v {
+			if s, ok := e.(string); ok && s == expectedAud {
+				okAud = true
+				break
+			}
+		}
+	case []string:
+		okAud = slices.Contains(v, expectedAud)
+	default:
+		if vs, ok := v.([]string); ok {
+			okAud = slices.Contains(vs, expectedAud)
+		}
+	}
+	if !okAud {
+		err = errors.New("JWT 'aud' does not contain our entity id")
+		return
+	}
+	if expRaw, ok := claims[claimExp]; ok {
+		var expUnix int64
+		switch x := expRaw.(type) {
+		case float64:
+			expUnix = int64(x)
+		case int:
+			expUnix = int64(x)
+		case int64:
+			expUnix = x
+		case json.Number:
+			if n, err := x.Int64(); err == nil {
+				expUnix = n
+			}
+		}
+		if expUnix != 0 && time.Now().Unix() >= expUnix {
+			err = errors.New("JWT expired")
+			return
+		}
+	}
+	return
 }
 
 func mergeUserinfoClaims(issuer, accessToken string, userData model.UserClaims) {
@@ -352,7 +463,7 @@ func mergeUserinfoClaims(issuer, accessToken string, userData model.UserClaims) 
 	}
 	opMetadata, err := federationLeafEntity.ResolveOPMetadata(issuer)
 	if err != nil {
-		log.WithError(err).Warn("could not resolve OP metadata for userinfo endpoint")
+		log.WithError(err).Error("could not resolve OP metadata for userinfo endpoint")
 		return
 	}
 	if opMetadata.UserinfoEndpoint == "" {
@@ -360,39 +471,52 @@ func mergeUserinfoClaims(issuer, accessToken string, userData model.UserClaims) 
 	}
 	resp, err := ihttp.Do().R().SetHeader("Authorization", "Bearer "+accessToken).Get(opMetadata.UserinfoEndpoint)
 	if err != nil {
-		log.WithError(err).Warn("failed calling userinfo endpoint")
+		log.WithError(err).Error("failed calling userinfo endpoint")
 		return
 	}
 	if !resp.IsSuccess() {
-		log.WithFields(log.Fields{"status": resp.StatusCode()}).Warn("userinfo endpoint returned non-200")
+		log.WithFields(log.Fields{"status": resp.StatusCode()}).Error("userinfo endpoint returned non-200")
 		return
 	}
+	ct := resp.Header().Get(fiber.HeaderContentType)
+	mt, _, _ := mime.ParseMediaType(ct)
+	mt = strings.ToLower(mt)
 	body := resp.Body()
 	var userInfoData model.UserClaims
-	// Try plain JSON first
-	if err := json.Unmarshal(body, &userInfoData); err == nil {
-		normalizeClaims(userInfoData)
-		for k, v := range userInfoData {
-			userData[k] = v
-		}
-		log.Debugf("Merged userinfo (JSON) claims: %+v", userInfoData)
-		return
-	}
-	// Fallback: try signed JWT
-	if msg, jerr := jws.Parse(body); jerr == nil {
-		if err := json.Unmarshal(msg.Payload(), &userInfoData); err != nil {
-			log.WithError(err).Warn("failed unmarshalling userinfo JWT payload")
+	switch mt {
+	case ctypeJSON:
+		if err = json.Unmarshal(body, &userInfoData); err != nil {
+			log.WithError(err).Error("failed parsing userinfo as application/json")
 			return
 		}
-		normalizeClaims(userInfoData)
-		for k, v := range userInfoData {
-			userData[k] = v
+	case ctypeJWT:
+		keySet, kerr := getOPKeySet(opMetadata)
+		if kerr != nil {
+			log.WithError(kerr).Error("could not get OP key set for userinfo verification")
+			return
 		}
-		log.Debugf("Merged userinfo (JWT) claims: %+v", userInfoData)
-		return
+		payload, verr := jws.Verify(body, jws.WithKeySet(keySet, jws.WithInferAlgorithmFromKey(true)))
+		if verr != nil {
+			log.WithError(verr).Error("userinfo JWT signature verification failed")
+			return
+		}
+		userInfoData, err = validateStandardJWTClaims(payload, opMetadata.Issuer, federationLeafEntity.EntityID)
+		if err != nil {
+			log.WithError(err).Error("userinfo JWT claims validation failed")
+			return
+		}
+	default:
+		// Unsupported or missing content type
+		log.WithField(
+			"content-type", ct,
+		).Error("unsupported or missing userinfo Content-Type; expected application/json or application/jwt")
 	}
-	// Both JSON and JWT failed
-	log.Warn("failed parsing userinfo as JSON or JWT")
+
+	normalizeClaims(userInfoData)
+	for k, v := range userInfoData {
+		userData[k] = v
+	}
+	log.Debugf("Merged userinfo (JSON) claims: %+v", userInfoData)
 }
 
 func createSessionCookie(c *fiber.Ctx, userData model.UserClaims) error {
