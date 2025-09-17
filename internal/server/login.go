@@ -191,7 +191,7 @@ func showLoginPage(c *fiber.Ctx) error {
 			"login-url":   fullLoginPath,
 			"entity-id":   config.Get().Federation.EntityID,
 			"ops":         opOptions,
-			"next":        c.Query("next"),
+			"next":        c.Query("next", config.Get().Federation.EntityID),
 			"conf":        config.Get().OPDiscovery,
 		},
 	)

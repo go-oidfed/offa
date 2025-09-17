@@ -54,7 +54,7 @@
     window.onload = function() {
         thiss.DiscoveryComponent({
             loginInitiatorURL:
-            '{{conf.ThissJS.URL}}/ds/?entityID={{entity-id}}&return={{login-url}}',
+            '{{conf.ThissJS.URL}}/ds/?entityID={{entity-id}}&return={{login-url}}?target_link_uri={{next}}',
         }).render('#login-thiss-js');
     };
 </script>
