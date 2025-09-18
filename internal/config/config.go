@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/jwx"
+	"github.com/go-oidfed/lib/oidfedconst"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/zachmann/go-utils/duration"
@@ -81,7 +82,7 @@ type federationConf struct {
 
 	ConfigurationLifetime       duration.DurationOption                      `yaml:"configuration_lifetime"`
 	KeyStorage                  string                                       `yaml:"key_storage"`
-	OnlyAutomaticOPs            bool                                         `yaml:"filter_to_automatic_ops"`
+	ClientRegistrationTypes     []string                                     `yaml:"client_registration_types"`
 	TrustMarks                  []*oidfed.EntityConfigurationTrustMarkConfig `yaml:"trust_marks"`
 	UseResolveEndpoint          bool                                         `yaml:"use_resolve_endpoint"`
 	UseEntityCollectionEndpoint bool                                         `yaml:"use_entity_collection_endpoint"`
@@ -333,6 +334,10 @@ func MustLoadConfig() {
 		},
 		Federation: federationConf{
 			ConfigurationLifetime: duration.DurationOption(24 * time.Hour),
+			ClientRegistrationTypes: []string{
+				oidfedconst.ClientRegistrationTypeAutomatic,
+				oidfedconst.ClientRegistrationTypeExplicit,
+			},
 		},
 		OPDiscovery: opDiscoveryConf{
 			Local: localOPDiscoveryConf{
