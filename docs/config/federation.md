@@ -305,18 +305,27 @@ the Entity Configuration JWTs are valid.
 
 The `key_storage` option is deprecated. Use [`signing.key_storage`](signing.md) instead.
 
-## `filter_to_automatic_ops`
-<span class="badge badge-purple" title="Value Type">boolean</span>
-<span class="badge badge-blue" title="Default Value">`false`</span>
+## `client_registration_types`
+<span class="badge badge-purple" title="Value Type">list of strings</span>
+<span class="badge badge-blue" title="Default Value">["automatic", "explicit"]</span>
 <span class="badge badge-green" title="If this option is required or optional">optional</span>
 
-The `filter_to_automatic_ops` option is currently unused.
+The `client_registration_types` option specifies which client registration types OFFA supports.
+This setting is also published in the relying party metadata as part of the entity configuration.
+
+Two registration types are supported as defined by the OpenID Federation specification:
+- `automatic`
+- `explicit`
+
+By default, both registration types are enabled.
+You can also specify only one registration type if needed:
 
 ??? file "config.yaml"
 
     ```yaml
     federation:
-        filter_to_automatic_ops: true
+        client_registration_types:
+            - explicit
     ```
 
 ## `trust_marks`
