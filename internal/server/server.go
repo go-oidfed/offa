@@ -85,7 +85,7 @@ func initFederationEntity() {
 			InitiateLoginURI:            fullLoginPath,
 			SoftwareID:                  version.SOFTWAREID,
 			SoftwareVersion:             version.VERSION,
-			ClientRegistrationTypes:     []string{"automatic"},
+			ClientRegistrationTypes:     fedConfig.ClientRegistrationTypes,
 			Extra:                       fedConfig.ExtraRPMetadata,
 			DisplayName:                 fedConfig.DisplayName,
 			Description:                 fedConfig.Description,
