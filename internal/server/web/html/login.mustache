@@ -4,6 +4,9 @@
     <link rel="stylesheet" href="{{basepath}}/static/css/sakura-earthly.css" media="screen" />
     <link rel="stylesheet" href="{{basepath}}/static/css/sakura-dark.css" media="screen and (prefers-color-scheme: dark)" />
     <link rel="stylesheet" href="{{basepath}}/static/css/offa.css" />
+    {{#conf.ThissJS.Enabled}}
+    <script src="{{conf.ThissJS.URL}}/thiss.js"></script>
+    {{/conf.ThissJS.Enabled}}
 </head>
 <body>
 <h2>{{client_name}}</h2>
@@ -11,6 +14,7 @@
     <img src="{{.}}" alt="Logo" class="logo"/>
 {{/logo_uri}}
 
+{{#conf.Local.Enabled}}
 <h4>Choose an OP to login</h4>
 <form action="{{login-path}}" id="form">
 
@@ -36,6 +40,26 @@
     <input type="hidden" name="iss" id="issuer"/>
     <input type="hidden" name="next" value="{{next}}" />
 </form>
+{{/conf.Local.Enabled}}
+
+{{#conf.ThissJS.Enabled}}
+<div id="seamless-access-login-container" class="mt-2">
+    {{#conf.Local.Enabled}}
+        <h4>Or</h4>
+    {{/conf.Local.Enabled}}
+   <div id="login-thiss-js"></div>
+</div>
+
+<script>
+    window.onload = function() {
+        thiss.DiscoveryComponent({
+            loginInitiatorURL:
+            '{{conf.ThissJS.URL}}/ds/?entityID={{entity-id}}&return={{login-url}}?target_link_uri={{next}}',
+        }).render('#login-thiss-js');
+    };
+</script>
+{{/conf.ThissJS.Enabled}}
+
 </body>
 <script src="{{basepath}}/static/js/login.js"></script>
 </html>

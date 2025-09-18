@@ -28,13 +28,29 @@ func Get() *Config {
 
 // Config holds the configuration for this application
 type Config struct {
-	Server         serverConf     `yaml:"server"`
-	Logging        loggingConf    `yaml:"logging"`
-	Federation     federationConf `yaml:"federation"`
-	Auth           authConf       `yaml:"auth"`
-	SessionStorage sessionConf    `yaml:"sessions"`
-	Signing        signingConf    `yaml:"signing"`
-	DebugAuth      bool           `yaml:"debug_auth"`
+	Server         serverConf      `yaml:"server"`
+	Logging        loggingConf     `yaml:"logging"`
+	Federation     federationConf  `yaml:"federation"`
+	Auth           authConf        `yaml:"auth"`
+	SessionStorage sessionConf     `yaml:"sessions"`
+	Signing        signingConf     `yaml:"signing"`
+	DebugAuth      bool            `yaml:"debug_auth"`
+	OPDiscovery    opDiscoveryConf `yaml:"op_discovery"`
+}
+
+type opDiscoveryConf struct {
+	Local   localOPDiscoveryConf `yaml:"local"`
+	ThissJS thissJSDiscoveryConf `yaml:"thiss.js"`
+}
+
+type thissJSDiscoveryConf struct {
+	Enabled bool   `yaml:"enabled"`
+	URL     string `yaml:"url"`
+}
+type localOPDiscoveryConf struct {
+	Enabled                     bool                    `yaml:"enabled"`
+	UseEntityCollectionEndpoint bool                    `yaml:"use_entity_collection_endpoint"`
+	EntityCollectionInterval    duration.DurationOption `yaml:"entity_collection_interval"`
 }
 
 type signingConf struct {
@@ -317,11 +333,20 @@ func MustLoadConfig() {
 			CookieName: "offa-session",
 		},
 		Federation: federationConf{
-			EntityCollectionInterval: duration.DurationOption(5 * time.Minute),
-			ConfigurationLifetime:    duration.DurationOption(24 * time.Hour),
+			ConfigurationLifetime: duration.DurationOption(24 * time.Hour),
 			ClientRegistrationTypes: []string{
 				oidfedconst.ClientRegistrationTypeAutomatic,
 				oidfedconst.ClientRegistrationTypeExplicit,
+			},
+		},
+		OPDiscovery: opDiscoveryConf{
+			Local: localOPDiscoveryConf{
+				Enabled:                  true,
+				EntityCollectionInterval: duration.DurationOption(5 * time.Minute),
+			},
+			ThissJS: thissJSDiscoveryConf{
+				Enabled: false,
+				URL:     "",
 			},
 		},
 		Signing: signingConf{
@@ -392,6 +417,14 @@ func MustLoadConfig() {
 	}
 	if conf.Signing.OIDC.RolloverConf.Interval < conf.Federation.ConfigurationLifetime {
 		conf.Signing.OIDC.RolloverConf.Interval = conf.Federation.ConfigurationLifetime
+	}
+	if conf.Federation.UseEntityCollectionEndpoint {
+		log.Warn("federation.use_entity_collection_endpoint is deprecated; use op_discovery.local.use_resolve_endpoint instead")
+		conf.OPDiscovery.Local.UseEntityCollectionEndpoint = true
+	}
+	if conf.Federation.EntityCollectionInterval.Duration() != 0 {
+		log.Warn("federation.entity_collection_interval is deprecated; use op_discovery.local.entity_collection_interval instead")
+		conf.OPDiscovery.Local.EntityCollectionInterval = conf.Federation.EntityCollectionInterval
 	}
 	if conf.Federation.UseEntityCollectionEndpoint && conf.Federation.EntityCollectionInterval.Duration() < time.Minute {
 		log.Fatal("federation.use_entity_collection_interval must be at least 1 minute")

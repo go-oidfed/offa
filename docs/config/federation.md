@@ -436,36 +436,17 @@ It is generally more performant to rely on an external resolver.
 
 
 ## `use_entity_collection_endpoint`
-<span class="badge badge-purple" title="Value Type">boolean</span>
-<span class="badge badge-blue" title="Default Value">`false`</span>
-<span class="badge badge-green" title="If this option is required or optional">optional</span>
+<span class="badge badge-red">deprecated</span>
 
-The `use_entity_collection_endpoint` option indicates if OFFA uses an external
-entity collection endpoint (from the federation) to collect OpenID Providers 
-in the federation. The collected providers are used to give the user a 
-provider selection to they can choose the provider they want to use.
-It is generally more performant to rely on an external endpoint.
-
-??? file "config.yaml"
-
-    ```yaml
-    federation:
-        use_entity_collection_endpoint: true
-    ```
-
+The `use_entity_collection_endpoint` option is deprecated.
+Use [`op_discovery.local.use_entity_collection_endpoint`](op_discovery.md#use_entity_collection_endpoint) 
+instead.
 
 ## `entity_collection_interval`
-<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
-<span class="badge badge-blue" title="Default Value">5 minutes</span>
-<span class="badge badge-green" title="If this option is required or optional">optional</span>
+<span class="badge badge-red">deprecated</span>
 
-The `entity_collection_interval` option defines in which interval OFFA will 
-query the Entity Collection Endpoint or do entity collection on its own.
+The `entity_collection_interval` option is deprecated.
+Use [`op_discovery.local.entity_collection_interval`](op_discovery.md#entity_collection_interval) 
+instead.
 
-??? file "config.yaml"
-
-    ```yaml
-    federation:
-        entity_collection_interval: 1h
-    ```
 
