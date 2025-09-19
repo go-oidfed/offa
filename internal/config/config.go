@@ -425,9 +425,12 @@ func MustLoadConfig() {
 	if conf.Federation.EntityCollectionInterval.Duration() != 0 {
 		log.Warn("federation.entity_collection_interval is deprecated; use op_discovery.local.entity_collection_interval instead")
 		conf.OPDiscovery.Local.EntityCollectionInterval = conf.Federation.EntityCollectionInterval
+		if conf.Federation.UseEntityCollectionEndpoint && conf.Federation.EntityCollectionInterval.Duration() < time.Minute {
+			log.Fatal("federation.use_entity_collection_interval must be at least 1 minute")
+		}
 	}
-	if conf.Federation.UseEntityCollectionEndpoint && conf.Federation.EntityCollectionInterval.Duration() < time.Minute {
-		log.Fatal("federation.use_entity_collection_interval must be at least 1 minute")
+	if conf.OPDiscovery.Local.UseEntityCollectionEndpoint && conf.OPDiscovery.Local.EntityCollectionInterval.Duration() < time.Minute {
+		log.Fatal("op_discovery.local.use_entity_collection_interval must be at least 1 minute")
 	}
 	if err = validate(); err != nil {
 		log.Fatalf("%s", err)
