@@ -5,6 +5,7 @@ import (
 	"time"
 
 	go2 "github.com/adam-hanna/arrayOperations"
+	oidfed "github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/oidfedconst"
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
@@ -31,6 +32,15 @@ func doLogin(c *fiber.Ctx, opID, next, loginHint string) error {
 	opMetadata, err := federationLeafEntity.ResolveOPMetadata(opID)
 	if err != nil {
 		return renderError(c, "could not resolve OP metadata", err.Error())
+	}
+	if requiredTrustMarks := config.Get().Federation.RequiredOPTrustMarks; len(requiredTrustMarks) > 0 {
+		ok, err := oidfed.VerifyEntityHasValidTrustmarks(opID, requiredTrustMarks, config.Get().Federation.TrustAnchors)
+		if err != nil {
+			return renderError(c, "could not verify that OP has all required trust marks", err.Error())
+		}
+		if !ok {
+			return renderError(c, "OP does not have all required trust marks", "")
+		}
 	}
 	possibleRegistrationTypes := go2.Intersect(
 		config.Get().Federation.

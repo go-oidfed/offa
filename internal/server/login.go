@@ -8,6 +8,7 @@ import (
 	"github.com/go-oidfed/lib/apimodel"
 	"github.com/go-oidfed/lib/oidfedconst"
 	"github.com/gofiber/fiber/v2"
+	log "github.com/sirupsen/logrus"
 	"github.com/zachmann/go-utils/ctxutils"
 
 	"github.com/go-oidfed/offa/internal/config"
@@ -85,6 +86,21 @@ func scheduleBuildOPOptions() {
 
 func buildOPOptions() {
 	filters := []oidfed.EntityCollectionFilter{}
+	if tms := config.Get().Federation.RequiredOPTrustMarks; len(tms) > 0 {
+		filters = append(
+			filters, oidfed.NewEntityCollectionFilter(
+				func(e *oidfed.CollectedEntity) bool {
+					ok, err := oidfed.VerifyEntityHasValidTrustmarks(
+						e.EntityID, tms, config.Get().Federation.TrustAnchors,
+					)
+					if err != nil {
+						log.WithError(err).Error("error during trustmark verification")
+					}
+					return ok
+				},
+			),
+		)
+	}
 	allOPs := make(map[string]*oidfed.CollectedEntity)
 	var options []opOption
 	var collector oidfed.EntityCollector

@@ -449,4 +449,23 @@ The `entity_collection_interval` option is deprecated.
 Use [`op_discovery.local.entity_collection_interval`](op_discovery.md#entity_collection_interval) 
 instead.
 
+## `required_op_trust_marks`
+<span class="badge badge-purple" title="Value Type">list of strings</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `required_op_trust_marks` option is used to specify Trust Mark Type identifiers.
+OpenID Providers must have a valid Trust Mark of the specified type to be accepted by OFFA.
+When this option is configured, OFFA will only allow authentication through OpenID Providers that have valid Trust 
+Marks for all the specified Trust Mark Types.
+
+This setting provides an additional layer of security and compliance by ensuring that only OpenID Providers with approved trust marks can be used for authentication.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        required_op_trust_marks:
+            - https://example.com/trust-mark/foobar
+            - https://example.com/trust-mark/gdpr-compliant
+    ```
 

@@ -8,7 +8,7 @@ require (
 	github.com/adam-hanna/arrayOperations v1.0.1
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
 	github.com/coreos/go-oidc/v3 v3.15.0
-	github.com/go-oidfed/lib v0.7.2-0.20250918061734-ce45fcd48b2d
+	github.com/go-oidfed/lib v0.7.2-0.20250919101342-9e9ce28715e6
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/gofiber/template/mustache/v2 v2.0.14
@@ -24,7 +24,7 @@ require (
 )
 
 require (
-	github.com/TwiN/gocache/v2 v2.2.2 // indirect
+	github.com/TwiN/gocache/v2 v2.4.0 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/cbroglie/mustache v1.4.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

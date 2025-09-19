@@ -87,6 +87,7 @@ type federationConf struct {
 	UseResolveEndpoint          bool                                         `yaml:"use_resolve_endpoint"`
 	UseEntityCollectionEndpoint bool                                         `yaml:"use_entity_collection_endpoint"`
 	EntityCollectionInterval    duration.DurationOption                      `yaml:"entity_collection_interval"`
+	RequiredOPTrustMarks        []string                                     `yaml:"required_op_trust_marks"`
 }
 
 type sessionConf struct {
