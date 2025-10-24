@@ -12,7 +12,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/gofiber/template/mustache/v2 v2.0.14
-	github.com/lestrrat-go/jwx/v3 v3.0.11
+	github.com/lestrrat-go/jwx/v3 v3.0.12
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.14.1
 	github.com/sirupsen/logrus v1.9.3
@@ -53,14 +53,14 @@ require (
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/scylladb/go-set v1.0.3-0.20200225121959-cc7b2070d91e // indirect
-	github.com/segmentio/asm v1.2.0 // indirect
+	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fastjson v1.6.4 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	golang.org/x/crypto v0.42.0 // indirect
+	golang.org/x/crypto v0.43.0 // indirect
 	golang.org/x/exp v0.0.0-20250911091902-df9299821621 // indirect
 	golang.org/x/net v0.45.0 // indirect
-	golang.org/x/sys v0.36.0 // indirect
-	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/sys v0.37.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 	tideland.dev/go/slices v0.2.0 // indirect
 )
