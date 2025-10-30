@@ -19,8 +19,8 @@ import (
 func loginExplicit(c *fiber.Ctx, opID, next, loginHint string) error {
 	log.Debugf("Starting authorization code flow with explicit client registration for %s", opID)
 	oidcRP, err := federationLeafEntity.GetExplicitRegistrationOIDCRP(
-		opID,
 		context.Background(),
+		opID,
 	)
 	if err != nil {
 		c.Status(444)
@@ -85,8 +85,8 @@ func codeExchangeExplicit(
 ) (model.UserClaims, error) {
 	log.Debugf("Doing authorization code exchange with explicit client registration")
 	oidcRP, err := federationLeafEntity.GetExplicitRegistrationOIDCRP(
-		stateInfo.Issuer,
 		context.Background(),
+		stateInfo.Issuer,
 	)
 	if err != nil {
 		c.Status(444)

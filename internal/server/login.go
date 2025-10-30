@@ -110,7 +110,7 @@ func buildOPOptions() {
 		collector = &oidfed.SimpleEntityCollector{}
 	}
 	for _, ta := range config.Get().Federation.TrustAnchors {
-		ops := oidfed.FilterableVerifiedChainsEntityCollector{
+		ops, _ := oidfed.FilterableVerifiedChainsEntityCollector{
 			Collector: collector,
 			Filters:   filters,
 		}.CollectEntities(
@@ -119,8 +119,10 @@ func buildOPOptions() {
 				EntityTypes: []string{oidfedconst.EntityTypeOpenIDProvider},
 			},
 		)
-		for _, op := range ops {
-			allOPs[op.EntityID] = op
+		if ops != nil {
+			for _, op := range ops.FederationEntities {
+				allOPs[op.EntityID] = op
+			}
 		}
 	}
 	for _, op := range allOPs {
