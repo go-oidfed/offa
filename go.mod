@@ -19,7 +19,7 @@ require (
 	github.com/valyala/fasthttp v1.68.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/zachmann/go-utils v0.0.0-20250930110126-c5ff4cbcb3d3
-	golang.org/x/oauth2 v0.32.0
+	golang.org/x/oauth2 v0.33.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
