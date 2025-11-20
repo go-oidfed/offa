@@ -6,7 +6,7 @@ require (
 	github.com/adam-hanna/arrayOperations v1.0.1
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
 	github.com/coreos/go-oidc/v3 v3.16.0
-	github.com/go-oidfed/lib v0.8.3
+	github.com/go-oidfed/lib v0.8.4
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/gofiber/template/mustache/v2 v2.0.14
