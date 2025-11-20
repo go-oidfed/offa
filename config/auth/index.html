@@ -1,0 +1,1395 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Gabriel Zachmann">
+      
+      
+      
+        <link rel="prev" href="../federation/">
+      
+      
+        <link rel="next" href="../sessions/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Auth - OFFA - Openid Federation Forward Auth</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        
+        <link rel="stylesheet" href="../../assets/external/fonts.googleapis.com/css.49ea35f2.css">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_markdown_exec_pyodide.css">
+    
+      <link rel="stylesheet" href="../../assets/_markdown_exec_ansi.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/admonitions.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#domain" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OFFA - Openid Federation Forward Auth" class="md-header__button md-logo" aria-label="OFFA - Openid Federation Forward Auth" data-md-component="logo">
+      
+  <img src="../../assets/offa.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OFFA - Openid Federation Forward Auth
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Auth
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  OFFA - Openid Federation Forward Auth
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Config
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../proxies/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Proxies
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OFFA - Openid Federation Forward Auth" class="md-nav__button md-logo" aria-label="OFFA - Openid Federation Forward Auth" data-md-component="logo">
+      
+  <img src="../../assets/offa.svg" alt="logo">
+
+    </a>
+    OFFA - Openid Federation Forward Auth
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OFFA - Openid Federation Forward Auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Config
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../server/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 19h1a1 1 0 0 1 1 1h7v2h-7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1H2v-2h7a1 1 0 0 1 1-1h1v-2H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-7zM4 3h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1m5 4h1V5H9zm0 8h1v-2H9zM5 5v2h2V5zm0 8v2h2v-2z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../logging/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.8 20c-.4 1.2-1.5 2-2.8 2H5c-1.7 0-3-1.3-3-3v-1h12.2c.4 1.2 1.5 2 2.8 2zM19 2c1.7 0 3 1.3 3 3v1h-2V5c0-.6-.4-1-1-1s-1 .4-1 1v13h-1c-.6 0-1-.4-1-1v-1H5V5c0-1.7 1.3-3 3-3zM8 6v2h7V6zm0 4v2h6v-2z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signing/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 22H2v-2h20zM6.2 17.3l-.7.7-1.4-1.4L2.7 18l-.7-.7 1.4-1.4L2 14.5l.7-.7 1.4 1.4 1.4-1.4.7.7-1.4 1.4zm10.02-2.87c0-.58-.72-1.23-2.16-1.97-1.83-.92-3.06-1.67-3.7-2.22-.65-.56-.97-1.18-.97-1.87 0-1.78.91-3.25 2.73-4.42s3.31-1.76 4.45-1.76c.74 0 1.28.13 1.61.39.32.25.5.69.5 1.32 0 .28-.12.52-.37.73-.24.2-.44.3-.57.3-.11 0-.31-.1-.61-.29l-.58-.26c-.47 0-1.41.33-2.84 1q-2.13.99-2.13 2.25c0 .51.24.97.74 1.37.5.42 1.39.93 2.68 1.53 1.03.47 1.86.97 2.5 1.54.6.54.91 1.18.91 1.93 0 1.34-.94 2.41-2.83 3.17-1.88.77-3.68 1.15-5.39 1.15-1.44 0-2.19-.49-2.19-1.46 0-.36.19-.59.5-.75.33-.16.66-.24 1-.24l.75.13.72.13c.98 0 2.03-.16 3.16-.49 1.13-.32 1.83-.73 2.09-1.21"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Signing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../op_discovery/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 6h2v7h-2zM9 20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-5l2-9h4v7a1 1 0 0 1-1 1zm1-15H7V3h3zm5 15v-6a1 1 0 0 1-1-1V6h4l2 9v5a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1M14 5V3h3v2z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    OP Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../federation/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14 2-3 1.5v16.44C7 19.5 4 17.46 4 15c0-2.25 2.5-4.15 6-4.78V8.19c-5.14.69-9 3.47-9 6.81 0 3.56 4.36 6.5 10 6.94h.09L14 20.5zm1 6.19v2.03c1.15.21 2.18.55 3.06 1L16.5 12l6.5 1.5-.5-4.5-2 1C19 9.12 17.12 8.47 15 8.19"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Federation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12h7c-.53 4.11-3.28 7.78-7 8.92zH5V6.3l7-3.11M12 1 3 5v6c0 5.55 3.84 10.73 9 12 5.16-1.27 9-6.45 9-12V5z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12h7c-.53 4.11-3.28 7.78-7 8.92zH5V6.3l7-3.11M12 1 3 5v6c0 5.55 3.84 10.73 9 12 5.16-1.27 9-6.45 9-12V5z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        domain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain_regex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        domain_regex
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#path_regex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        path_regex
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#require" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        require
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#require-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        require options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forward_headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward_headers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forward_headers_prefix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward_headers_prefix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#redirect_status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        redirect_status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sessions/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-9 9 9 9 0 0 0 9 9 9 9 0 0 0 9-9c0-.5-.04-1-.13-1.5C20.6 10 20 10 20 10h-2V9c0-1-1-1-1-1h-2V7c0-1-1-1-1-1h-1V4c0-1-1-1-1-1M9.5 6A1.5 1.5 0 0 1 11 7.5 1.5 1.5 0 0 1 9.5 9 1.5 1.5 0 0 1 8 7.5 1.5 1.5 0 0 1 9.5 6m-3 4A1.5 1.5 0 0 1 8 11.5 1.5 1.5 0 0 1 6.5 13 1.5 1.5 0 0 1 5 11.5 1.5 1.5 0 0 1 6.5 10m5 1a1.5 1.5 0 0 1 1.5 1.5 1.5 1.5 0 0 1-1.5 1.5 1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5m5 2a1.5 1.5 0 0 1 1.5 1.5 1.5 1.5 0 0 1-1.5 1.5 1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5M11 16a1.5 1.5 0 0 1 1.5 1.5A1.5 1.5 0 0 1 11 19a1.5 1.5 0 0 1-1.5-1.5A1.5 1.5 0 0 1 11 16"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debug_auth/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M208 40a56 56 0 1 1 112 0 56 56 0 1 1-112 0M10.5 181.3c5.9-11.9 20.3-16.7 32.2-10.7l24.6 12.3 12.2-20.4C98.4 131 132.7 112 169.1 112c46.2 0 87.7 30.5 100.5 75.4l32.2 112.7 92.9 46.4 25.8-43c5.8-9.6 16.2-15.5 27.4-15.5s21.7 5.9 27.4 15.5l96 160c5.9 9.9 6.1 22.2.4 32.2S555.5 512 544 512H352c-11.5 0-22.2-6.2-27.8-16.2s-5.5-22.3.4-32.2l45.4-75.8L21.3 213.5c-11.9-5.9-16.7-20.3-10.7-32.2zm83.8 126.1 112 56c10.8 5.4 17.7 16.5 17.7 28.6v88c0 17.7-14.3 32-32 32s-32-14.3-32-32v-68.2l-61.3-30.7-36.3 109c-5.6 16.8-23.7 25.8-40.5 20.2s-25.8-23.7-20.2-40.4l48-144c2.9-8.8 9.5-15.9 18.1-19.4s18.3-3.2 26.6.9z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    debug_auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../proxies/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Proxies
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../proxies/apache/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.805 2.197v.066h.156v.44h.072v-.44h.156v-.066zm.9 0-.175.353-.172-.353h-.087v.506h.067V2.3l.172.35h.045l.172-.35v.404h.066v-.506zm-4.257 1c-.204.31-.424.66-.66 1.06l-.04.062a45 45 0 0 0-1.265 2.29q-.281.54-.577 1.146l2.267-.25c.66-.302.955-.578 1.242-.976a16 16 0 0 0 .23-.342c.23-.363.46-.763.663-1.16.197-.386.37-.767.505-1.11q.125-.332.198-.6.062-.236.1-.45c-.884.15-1.965.295-2.668.33zM11.894 7.78l-.077.16q-.117.238-.236.488-.128.27-.26.552l-.132.287a75 75 0 0 0-1.427 3.3q-.244.596-.493 1.23c-.15.38-.297.765-.45 1.164l-.02.06q-.224.594-.453 1.22l-.01.027.72-.08a.2.2 0 0 1-.042-.006c.863-.106 2.01-.75 2.75-1.547.342-.367.652-.8.94-1.306q.319-.564.604-1.258.252-.607.48-1.318c-.196.105-.423.18-.673.235a2 2 0 0 1-.273.046c.806-.31 1.314-.905 1.683-1.64a2.8 2.8 0 0 1-.968.428q-.088.018-.174.03l-.043.006h.002c.278-.118.514-.248.718-.403a2.6 2.6 0 0 0 .637-.698l.063-.104.077-.154a8 8 0 0 0 .367-.85l.03-.088a3 3 0 0 0 .123-.463 1 1 0 0 1-.094.065c-.243.145-.66.277-.996.34l.663-.074-.664.073h-.017l-.1.017q.008-.005.017-.008l-2.265.25-.013.022zM8.27 16.45q-.176.485-.355.992l-.005.015q-.024.07-.05.142c-.08.227-.15.432-.31.9.264.12.475.435.675.793a1.44 1.44 0 0 0-.466-.99c1.293.06 2.41-.27 2.99-1.217q.075-.126.14-.268c-.26.333-.59.474-1.2.44q-.002 0-.005.002l.004-.002c.9-.404 1.354-.79 1.754-1.433q.14-.229.28-.503c-.788.81-1.702 1.04-2.664.865l-.72.078-.067.183zM15.42.112c-.376.222-1 .85-1.748 1.763l.686 1.294c.48-.687.97-1.307 1.462-1.836l.058-.062q-.03.03-.057.062c-.16.176-.644.74-1.375 1.863.703-.035 1.784-.18 2.666-.33.262-1.47-.258-2.142-.258-2.142s-.66-1.07-1.436-.61zm-3.084 6.402a40 40 0 0 1 1.306-2.26l.04-.064q.336-.529.677-1.02l-.685-1.293-.157.192q-.297.369-.613.79a40 40 0 0 0-2.016 2.97l-.022.038.893 1.763q.284-.568.575-1.118zm-3.73 8.32c.158-.406.319-.81.483-1.225.156-.394.32-.79.484-1.19a91 91 0 0 1 1.6-3.604l.205-.424c.12-.243.237-.485.36-.724a.1.1 0 0 1 .02-.04l-.895-1.763-.044.07a44 44 0 0 0-.617 1.042 38 38 0 0 0-1.092 2.04l-.094.193a25 25 0 0 0-1.258 3.087 19 19 0 0 0-.52 1.997l.896 1.77q.177-.476.364-.963zm-1.376-.476a13 13 0 0 0-.234 1.692q-.002.03-.005.06c-.28-.45-1.03-.888-1.026-.884.537.778.944 1.55 1.005 2.31-.29.058-.684-.027-1.14-.195.475.436.83.556.97.588-.434.03-.89.328-1.346.67.668-.27 1.21-.38 1.596-.29-.61 1.74-1.23 3.655-1.843 5.69a.54.54 0 0 0 .364-.354c.11-.368.84-2.786 1.978-5.965l.097-.27.028-.078q.181-.498.374-1.02l.09-.237v-.004L7.24 14.3c-.003.02-.01.04-.012.06z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Apache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../proxies/caddy/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.094.47c-.842 0-1.696.092-2.552.288a11.4 11.4 0 0 0-4.87 2.423 10.6 10.6 0 0 0-2.36 2.826A10.1 10.1 0 0 0 .305 8.582c-.398 1.62-.4 3.336-.043 5.048.085.405.183.809.31 1.212a11.9 11.9 0 0 0 1.662 3.729 3 3 0 0 0-.086.427 3.323 3.323 0 0 0 2.848 3.71 3.28 3.28 0 0 0 1.947-.346c1.045.51 2.17.864 3.339 1.04a11.7 11.7 0 0 0 4.285-.155 11.57 11.57 0 0 0 4.936-2.485 10.6 10.6 0 0 0 2.352-2.894 11.2 11.2 0 0 0 1.356-4.424 11.2 11.2 0 0 0-.498-4.335q.263-.116.486-.293h.001c.402-.322.693-.794.777-1.342a2.146 2.146 0 0 0-1.79-2.434 2.1 2.1 0 0 0-1.205.171q-.059-.064-.113-.13a11.7 11.7 0 0 0-3.476-2.93 13 13 0 0 0-1.76-.81 13.6 13.6 0 0 0-2.06-.613 12 12 0 0 0-2.48-.258Zm.714.328a10 10 0 0 1 1.028.042 9.9 9.9 0 0 1 2.743.639c.984.39 1.89.958 2.707 1.632a10.8 10.8 0 0 1 2.091 2.328q.038.06.07.12a2.12 2.12 0 0 0-.435 2.646c-.158.114-.97.692-1.634 1.183-.414.308-.733.557-.733.557l.581.68s.296-.276.665-.638c.572-.562 1.229-1.233 1.395-1.403a2.12 2.12 0 0 0 1.907.677 11.2 11.2 0 0 1-.013 4.046 11.4 11.4 0 0 1-1.475 3.897 12.3 12.3 0 0 1-2.079 2.587c-1.19 1.125-2.633 2.022-4.306 2.531a10.8 10.8 0 0 1-3.973.484 11 11 0 0 1-3.057-.652 3.3 3.3 0 0 0 1.417-2.294 3.28 3.28 0 0 0-.294-1.842c.18-.162.403-.363.656-.6 1.015-.955 2.353-2.303 2.353-2.303l-.47-.599s-1.63.972-2.801 1.728c-.307.198-.573.378-.777.517a3.3 3.3 0 0 0-1.516-.611 3.33 3.33 0 0 0-3.487 2.017 10 10 0 0 1-.695-1.078A11 11 0 0 1 .728 14.8a10 10 0 0 1-.2-1.212c-.164-1.653.103-3.258.629-4.754a13 13 0 0 1 1.087-2.288c.57-.968 1.248-1.872 2.069-2.656A11 11 0 0 1 11.808.797Zm-.147 3.257a3.84 3.84 0 0 0-3.82 3.82v2.36h-.94c-.751 0-1.377.625-1.377 1.377v3.8h1.46v-3.718h9.354v6.264H10.02v1.46h6.4c.751 0 1.377-.625 1.377-1.377v-6.43a1.39 1.39 0 0 0-1.377-1.377h-.94v-2.36a3.84 3.84 0 0 0-3.82-3.819zm0 1.46a2.37 2.37 0 0 1 2.36 2.36v2.36H9.3v-2.36a2.37 2.37 0 0 1 2.36-2.36zm10.141.392a1.253 1.253 0 0 1 1.296 1.434 1.24 1.24 0 0 1-.453.78c-.266.213-.61.318-.968.264a1.253 1.253 0 0 1-1.045-1.42 1.255 1.255 0 0 1 1.17-1.058M5.384 17.425a2.02 2.02 0 0 1 1.917 1.298c.116.3.159.628.114.967a2.015 2.015 0 0 1-2.249 1.728 2.016 2.016 0 0 1-1.727-2.25 2.02 2.02 0 0 1 1.945-1.743"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Caddy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../proxies/nginx/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 0 1.605 6v12L12 24l10.395-6V6zm6 16.59c0 .705-.646 1.29-1.529 1.29-.631 0-1.351-.255-1.801-.81l-6-7.141v6.66c0 .721-.57 1.29-1.274 1.29H7.32c-.721 0-1.29-.6-1.29-1.29V7.41c0-.705.63-1.29 1.5-1.29.646 0 1.38.255 1.83.81l5.97 7.141V7.41c0-.721.6-1.29 1.29-1.29h.075c.72 0 1.29.6 1.29 1.29v9.18z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Nginx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../proxies/traefik/" class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 1.19c1.088 0 2.056.768 2.056 1.714 0 .947-.921 1.715-2.056 1.715q-.195 0-.509-.064a.7.7 0 0 0-.475.076l-7.37 4.195a.344.344 0 0 0 .001.597l7.99 4.49a.69.69 0 0 0 .669 0l8.034-4.468a.343.343 0 0 0 .003-.598l-2.507-1.424a.68.68 0 0 0-.67-.003l-2.647 1.468a.23.23 0 0 0-.119.18l-.001.025c0 .946-.921 1.714-2.056 1.714s-2.056-.768-2.056-1.714c0-.947.921-1.715 2.056-1.715q.063 0 .145.007l.087.008.096.013a.7.7 0 0 0 .425-.08l3.913-2.173c.3-.166.662-.171.965-.017l.04.023 5.465 3.104a1.03 1.03 0 0 1 .03 1.773l-.037.021-3.656 2.033a.343.343 0 0 0 .007.604l3.62 1.906c.72.378.736 1.402.03 1.804l-10.995 6.272a1.03 1.03 0 0 1-1.019 0L.526 16.43a1.03 1.03 0 0 1 .034-1.806l3.66-1.911a.343.343 0 0 0 .01-.603L.524 10.029a1.03 1.03 0 0 1-.041-1.77l.036-.021L9.618 3.06a.7.7 0 0 0 .308-.369l.011-.036c.32-.952 1.046-1.466 2.063-1.466Zm5.076 12.63-4.492 2.586-.041.022a1.02 1.02 0 0 1-.973-.018l-4.478-2.527a.68.68 0 0 0-.65-.01L3.86 15.224a.343.343 0 0 0-.012.602l7.887 4.515a.68.68 0 0 0 .677 0l7.956-4.547a.343.343 0 0 0-.01-.602l-2.623-1.384a.68.68 0 0 0-.659.012"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Traefik
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+  <h1>Auth</h1>
+
+<p><span class="badge badge-purple" title="Value Type">list of Auth Rules</span>
+<span class="badge badge-orange" title="If this option is required or optional">required, unless apache is used</span></p>
+<p>Under the <code>auth</code> option Auth Rules are configured. Each Auth Rule controls 
+access to a resource / service / URI.</p>
+<p>When OFFA receives a request to the
+<a href="../server/#forward_auth">forward auth endpoint</a>, the reverse proxy includes 
+information in the request on which site the user wants to access. OFFA uses 
+the configured Auth Rules to find a matching rule and evaluate if the user 
+is authorised to do so or not.
+(If no rule matches, the user is not authorised).</p>
+<p>The following options are available for each Auth Rule:</p>
+<h2 id="domain"><code>domain</code><a class="headerlink" href="#domain" title="Permanent link">&para;</a></h2>
+<p><span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-red" title="If this option is required or optional">required, unless <code>domain_regex</code> is given</span></p>
+<p>The <code>domain</code> option is used to set the domain that is used to match a 
+request with the Auth Rule.</p>
+<details class="file">
+<summary>config.yaml</summary>
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+</code></pre></div>
+</details>
+<h2 id="domain_regex"><code>domain_regex</code><a class="headerlink" href="#domain_regex" title="Permanent link">&para;</a></h2>
+<p><span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-red" title="If this option is required or optional">required, unless <code>domain</code> is given</span></p>
+<p>The <code>domain_regex</code> option is used to set a regular expression to match the 
+request's domain with the Auth Rule.</p>
+<p>The regex must be in the <code>Golang</code> flavor. We recommend https://regex101.com/ 
+to try out your regexes.</p>
+<details class="file">
+<summary>config.yaml</summary>
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain_regex</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;^(pub|img)-data\.example\.com$&#39;</span>
+</code></pre></div>
+</details>
+<h2 id="path"><code>path</code><a class="headerlink" href="#path" title="Permanent link">&para;</a></h2>
+<p><span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span></p>
+<p>The <code>path</code> option is used to set an url path that is used to match a
+request with the Auth Rule.
+If not set, any path will match.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Using the <code>path</code> option requires an exact match. Sub-paths are not 
+matched. To do so, <a href="#path-regex"><code>path_regex</code></a> must be used.</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p><code>/private</code> does only match <code>/private</code>, but not <code>/private/</code> or 
+<code>/private/foo</code>.</p>
+</div>
+</div>
+<details class="file">
+<summary>config.yaml</summary>
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">      </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/private&quot;</span>
+</code></pre></div>
+</details>
+<h2 id="path_regex"><code>path_regex</code><a class="headerlink" href="#path_regex" title="Permanent link">&para;</a></h2>
+<p><span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span></p>
+<p>The <code>path_regex</code> option is used to set a regular expression to match the
+request's url path with the Auth Rule.</p>
+<p>The regex must be in the <code>Golang</code> flavor. We recommend https://regex101.com/
+to try out your regexes.</p>
+<details class="file">
+<summary>config.yaml</summary>
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">      </span><span class="nt">path_regex</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;^/private(/?].*)?$&#39;</span>
+</code></pre></div>
+</details>
+<h2 id="require"><code>require</code><a class="headerlink" href="#require" title="Permanent link">&para;</a></h2>
+<p><span class="badge badge-purple" title="Value Type">list</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span></p>
+<p>The <code>require</code> option is used to define authorisation requirements, i.e. 
+requirements a user has to fulfill in order to get access.</p>
+<p>The syntax for this option is a bit more complex to allow for flexibility.
+Generally, the value for <code>require</code> is a list. Each entry is a 'require option',
+i.e. as soon as one of the options matches the user, the user will be 
+authorised -- to say it differently: those are logically ORed.</p>
+<p>If only one option is given the list can be skipped, and it can be given as a 
+single option.</p>
+<p>If no options are given, every authenticated user will be authorised.</p>
+<h2 id="require-options"><code>require</code> options<a class="headerlink" href="#require-options" title="Permanent link">&para;</a></h2>
+<p>Each option entry is a mapping where the keys are OIDC Claim names and the 
+value is a list of values.
+The option matches for a user when the user fulfills all specified claims. 
+Only claims where the value is a string or array of strings can be used.
+If the claim value is a string, the specified claim value must be equal to 
+the user claim value in order to fulfill the claim. 
+If the claim value is an array of strings, the  specified claim values must 
+be a subset of the user claim values in order to fulfill the claim.</p>
+<p>If only a single claim value is required (nevertheless if the claim value 
+type is string or array), it can be specified as a single string (skipping 
+the list).</p>
+<p>The following <code>require</code> options are all valid and all equivalent and all 
+require that users are in the <code>admin</code> group:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="configyaml" name="__tabbed_1" type="radio" /><input id="configyaml_1" name="__tabbed_1" type="radio" /><input id="configyaml_2" name="__tabbed_1" type="radio" /><input id="configyaml_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="configyaml"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 9h5.5L13 3.5zM6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m.12 13.5 3.74 3.74 1.42-1.41-2.33-2.33 2.33-2.33-1.42-1.41zm11.16 0-3.74-3.74-1.42 1.41 2.33 2.33-2.33 2.33 1.42 1.41z"/></svg></span> <code>config.yaml</code></label><label for="configyaml_1"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 9h5.5L13 3.5zM6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m.12 13.5 3.74 3.74 1.42-1.41-2.33-2.33 2.33-2.33-1.42-1.41zm11.16 0-3.74-3.74-1.42 1.41 2.33 2.33-2.33 2.33 1.42 1.41z"/></svg></span> <code>config.yaml</code></label><label for="configyaml_2"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 9h5.5L13 3.5zM6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m.12 13.5 3.74 3.74 1.42-1.41-2.33-2.33 2.33-2.33-1.42-1.41zm11.16 0-3.74-3.74-1.42 1.41 2.33 2.33-2.33 2.33 1.42 1.41z"/></svg></span> <code>config.yaml</code></label><label for="configyaml_3"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 9h5.5L13 3.5zM6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m.12 13.5 3.74 3.74 1.42-1.41-2.33-2.33 2.33-2.33-1.42-1.41zm11.16 0-3.74-3.74-1.42 1.41 2.33 2.33-2.33 2.33 1.42 1.41z"/></svg></span> <code>config.yaml</code></label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">    </span><span class="nt">require</span><span class="p">:</span>
+<span class="w">       </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">groups</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">    </span><span class="nt">require</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">groups</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">    </span><span class="nt">require</span><span class="p">:</span>
+<span class="w">       </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">    </span><span class="nt">require</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The following is a more complex example with four different require options:</p>
+<div class="admonition file">
+<p class="admonition-title">config.yaml</p>
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">    </span><span class="nt">require</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">groups</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">sub</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">john</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
+<span class="w">          </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span><span class="w">  </span>
+</code></pre></div>
+</div>
+<h2 id="forward_headers"><code>forward_headers</code><a class="headerlink" href="#forward_headers" title="Permanent link">&para;</a></h2>
+<p><span class="badge badge-purple" title="Value Type">mapping / object</span>
+<span class="badge badge-blue" title="Default Value">see file example</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span></p>
+<p>The <code>forward_headers</code> option is used to specify which HTTP Headers that 
+should be forwarded to the client / site and also from which OIDC claims the
+information should be obtained. The <code>forward_headers</code> is a mapping where keys
+are http header names, and the value are oidc claims.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>OIDC Claims can be given as a single string or a list of strings. If a 
+list is given OFFA will use the value from the first non-empty claim.</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>In the config below <code>X-Forwarded-User</code> will be populated with the 
+value in <code>preferred_username</code> if that is set, or <code>sub</code> otherwise.</p>
+</div>
+</div>
+<p>The default mapping is as listed in the following <code>config.yaml</code> example.</p>
+<div class="admonition file">
+<p class="admonition-title">config.yaml</p>
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">    </span><span class="nt">forward_headers</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">X-Forwarded-User</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">preferred_username</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sub</span>
+<span class="w">        </span><span class="nt">X-Forwarded-Groups</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">entitlements</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">groups</span>
+<span class="w">        </span><span class="nt">X-Forwarded-Email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
+<span class="w">        </span><span class="nt">X-Forwarded-Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">name</span>
+<span class="w">        </span><span class="nt">X-Forwarded-Provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">iss</span>
+<span class="w">        </span><span class="nt">X-Forwarded-Subject</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sub</span>
+</code></pre></div>
+</div>
+<p>To forward all oidc claims use the
+<a href="#forward_headers_prefix"><code>forward_headers_prefix</code></a> config option.</p>
+<h2 id="forward_headers_prefix"><code>forward_headers_prefix</code><a class="headerlink" href="#forward_headers_prefix" title="Permanent link">&para;</a></h2>
+<p><span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span></p>
+<p>The <code>forward_headers_prefix</code> config option is used to set a prefix for 
+forwarded headers. When this option is set, all information OFFA obtains is 
+forwarded via http headers. The name of the headers will be 
+<code>&lt;prefix&gt;-&lt;claim_name&gt;</code>.</p>
+<details class="file">
+<summary>config.yaml</summary>
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">    </span><span class="nt">forward_headers_prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oidc</span>
+</code></pre></div>
+</details>
+<h2 id="redirect_status"><code>redirect_status</code><a class="headerlink" href="#redirect_status" title="Permanent link">&para;</a></h2>
+<p><span class="badge badge-purple" title="Value Type">integer</span>
+<span class="badge badge-blue" title="Default Value">303</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span></p>
+<p>If the user needs to be authenticated, OFFA will redirect the browser to the 
+<a href="../server/#login">login page</a>. By default, this uses the HTTP status code 
+<code>303</code> See Other. However, this might not be supported by the reverse proxy, 
+(e.g. nginx only accepts <code>401</code> and <code>403</code> responses to authentication 
+subrequests). 
+The <code>redirect_status</code> option is used to change the status code for such 
+redirects.</p>
+<details class="file">
+<summary>config.yaml</summary>
+<div class="highlight"><pre><span></span><code><span class="nt">auth</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar.example.com</span>
+<span class="w">    </span><span class="nt">redirect_status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">401</span>
+</code></pre></div>
+</details>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../federation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Federation">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Federation
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../sessions/" class="md-footer__link md-footer__link--next" aria-label="Next: Sessions">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Sessions
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 - 2025 Gabriel Zachmann
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/go-oidfed/offa" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://hub.docker.com/r/oidfed/offa" target="_blank" rel="noopener" title="hub.docker.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M349.9 236.3h-66.1v-59.4h66.1zm0-204.3h-66.1v60.7h66.1zm78.2 144.8H362v59.4h66.1zm-156.3-72.1h-66.1v60.1h66.1zm78.1 0h-66.1v60.1h66.1zm276.8 100c-14.4-9.7-47.6-13.2-73.1-8.4-3.3-24-16.7-44.9-41.1-63.7l-14-9.3-9.3 14c-18.4 27.8-23.4 73.6-3.7 103.8-8.7 4.7-25.8 11.1-48.4 10.7H2.4c-8.7 50.8 5.8 116.8 44 162.1 37.1 43.9 92.7 66.2 165.4 66.2 157.4 0 273.9-72.5 328.4-204.2 21.4.4 67.6.1 91.3-45.2 1.5-2.5 6.6-13.2 8.5-17.1zm-511.1-27.9h-66v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1zm78.1 0h-66.1v59.4h66.1zm-78.1-72.1h-66.1v60.1h66.1z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:oidfed@lists.kit.edu" target="_blank" rel="noopener" title="" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M536.4-26.3c9.8-3.5 20.6-1 28 6.3s9.8 18.2 6.3 28l-178 496.9c-5 13.9-18.1 23.1-32.8 23.1-14.2 0-27-8.6-32.3-21.7l-64.2-158c-4.5-11-2.5-23.6 5.2-32.6l94.5-112.4c5.1-6.1 4.7-15-.9-20.6s-14.6-6-20.6-.9l-112.4 94.3c-9.1 7.6-21.6 9.6-32.6 5.2L38.1 216.8c-13.1-5.3-21.7-18.1-21.7-32.3 0-14.7 9.2-27.8 23.1-32.8z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.instant", "navigation.tracking", "navigation.indexes", "navigation.top", "navigation.footer", "toc.integrate", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../../assets/_markdown_exec_pyodide.js"></script>
+      
+        <script src="../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
