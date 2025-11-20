@@ -36,6 +36,53 @@ not given, an in-memory cache is used.
         redis_addr: redis:6379
     ```
 
+## `redis_username`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+Sets the Redis ACL username used to authenticate to the server.
+Leave empty when Redis is configured without ACL users.
+
+??? file "config.yaml"
+
+    ```yaml
+    sessions:
+      redis_addr: "redis:6379"
+      redis_username: "app-user"
+    ```
+
+## `redis_password`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+Sets the password for Redis authentication. Used with or without `username`
+depending on your Redis setup.
+
+??? file "config.yaml"
+
+    ```yaml
+    sessions:
+      redis_addr: "redis:6379"
+      redis_password: "s3cr3t-pass"
+    ```
+
+## `redis_db`
+<span class="badge badge-purple" title="Value Type">integer</span>
+<span class="badge badge-blue" title="Default Value">0</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+Selects the Redis logical database index to use. Defaults to `0` if not
+set. Common deployments use `0`; choose another index when sharing a
+Redis instance with other applications.
+
+??? file "config.yaml"
+
+    ```yaml
+    sessions:
+      redis_addr: "redis:6379"
+      redis_db: 1
+    ```
+
 ## `memcached_addr`
 <span class="badge badge-purple" title="Value Type">string</span>
 <span class="badge badge-orange" title="If this option is required or optional">required if apache is used</span>

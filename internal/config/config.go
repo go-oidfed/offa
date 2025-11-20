@@ -93,6 +93,9 @@ type federationConf struct {
 type sessionConf struct {
 	TTL             int                                               `yaml:"ttl"`
 	RedisAddr       string                                            `yaml:"redis_addr"`
+	RedisUsername   string                                            `yaml:"redis_username"`
+	RedisPassword   string                                            `yaml:"redis_password"`
+	RedisDB         int                                               `yaml:"redis_db"`
 	MemCachedAddr   string                                            `yaml:"memcached_addr"`
 	MemCachedClaims map[string]oidfed.SliceOrSingleValue[model.Claim] `yaml:"memcached_claims"`
 	CookieName      string                                            `yaml:"cookie_name"`

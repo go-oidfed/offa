@@ -20,7 +20,10 @@ func Init() {
 	if config.Get().SessionStorage.RedisAddr != "" {
 		if err := fedcache.UseRedisCache(
 			&redis.Options{
-				Addr: config.Get().SessionStorage.RedisAddr,
+				Addr:     config.Get().SessionStorage.RedisAddr,
+				Username: config.Get().SessionStorage.RedisUsername,
+				Password: config.Get().SessionStorage.RedisPassword,
+				DB:       config.Get().SessionStorage.RedisDB,
 			},
 		); err != nil {
 			log.WithError(err).Fatal("could not init redis cache")
