@@ -100,7 +100,7 @@ func initFederationEntity() {
 	}
 	metadata.RelyingParty.Extra["id_token_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
 	metadata.RelyingParty.Extra["userinfo_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
-	metadata.RelyingParty.Extra["request_object_alg_values_supported"] = jwx.SupportedAlgsStrings()
+	metadata.RelyingParty.Extra["request_object_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
 	metadata.RelyingParty.Extra["token_endpoint_auth_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
 
 	if fedConfig.ExtraEntityConfigurationData == nil {
