@@ -12,7 +12,7 @@ require (
 	github.com/gofiber/template/mustache/v2 v2.0.14
 	github.com/lestrrat-go/jwx/v3 v3.0.13
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.17.3
+	github.com/redis/go-redis/v9 v9.18.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/valyala/fasthttp v1.69.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
@@ -55,6 +55,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fastjson v1.6.7 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
