@@ -50,7 +50,13 @@ func addRecoverMiddleware(s fiber.Router) {
 }
 
 func addHelmetMiddleware(s fiber.Router) {
-	s.Use(helmet.New())
+	s.Use(
+		helmet.New(
+			helmet.Config{
+				CrossOriginEmbedderPolicy: "unsafe-none",
+			},
+		),
+	)
 }
 
 func addRequestIDMiddleware(s fiber.Router) {
