@@ -1,6 +1,8 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"strings"
 )
 
@@ -8,6 +10,17 @@ type Claim string
 
 // UserClaims holds claims about a user
 type UserClaims map[Claim]any
+
+func (claims *UserClaims) UnmarshalJSON(data []byte) error {
+	var m map[Claim]any
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.UseNumber()
+	if err := dec.Decode(&m); err != nil {
+		return err
+	}
+	*claims = m
+	return nil
+}
 
 func (claims UserClaims) GetForHeader(claim Claim) (string, bool) {
 	return claims.getAsString(claim, ",")
