@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-oidfed/lib"
-	"github.com/go-oidfed/lib/jwx"
+	"github.com/go-oidfed/lib/jwx/keymanagement/kms"
 	"github.com/go-oidfed/lib/oidfedconst"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -54,9 +54,9 @@ type localOPDiscoveryConf struct {
 }
 
 type signingConf struct {
-	KeyStorage string               `yaml:"key_storage"`
-	Federation jwx.KeyStorageConfig `yaml:"federation"`
-	OIDC       jwx.KeyStorageConfig `yaml:"oidc"`
+	KeyStorage string         `yaml:"key_storage"`
+	Federation KeyStorageConf `yaml:"federation"`
+	OIDC       KeyStorageConf `yaml:"oidc"`
 }
 
 type federationConf struct {
@@ -300,6 +300,11 @@ func validate() error {
 	if err := conf.SessionStorage.validate(); err != nil {
 		return err
 	}
+	conf.Signing.Federation.normalize()
+	conf.Signing.OIDC.normalize()
+	if len(conf.Signing.Federation.Algs) != 1 {
+		return errors.New("federation signing config must have exactly one algorithm")
+	}
 	u, err := url.Parse(conf.Federation.EntityID)
 	if err != nil {
 		return err
@@ -354,20 +359,20 @@ func MustLoadConfig() {
 			},
 		},
 		Signing: signingConf{
-			Federation: jwx.KeyStorageConfig{
-				Algorithm: "ES512",
+			Federation: KeyStorageConf{
+				Alg:       "ES512",
 				RSAKeyLen: 2048,
-				RolloverConf: jwx.RolloverConf{
+				KeyRotation: kms.KeyRotationConfig{
 					Enabled:  false,
-					Interval: 600000,
+					Interval: duration.DurationOption(600000 * time.Second),
 				},
 			},
-			OIDC: jwx.KeyStorageConfig{
-				DefaultAlgorithm: "ES512",
-				RSAKeyLen:        2048,
-				RolloverConf: jwx.RolloverConf{
+			OIDC: KeyStorageConf{
+				DefaultAlg: "ES512",
+				RSAKeyLen:  2048,
+				KeyRotation: kms.KeyRotationConfig{
 					Enabled:  false,
-					Interval: 600000,
+					Interval: duration.DurationOption(600000 * time.Second),
 				},
 			},
 		},
@@ -416,11 +421,11 @@ func MustLoadConfig() {
 	if conf.Federation.LogoURI == "" {
 		conf.Federation.LogoURI = conf.Federation.EntityID + "/static/img/offa-text.svg"
 	}
-	if conf.Signing.Federation.RolloverConf.Interval < conf.Federation.ConfigurationLifetime {
-		conf.Signing.Federation.RolloverConf.Interval = conf.Federation.ConfigurationLifetime
+	if conf.Signing.Federation.KeyRotation.Interval < conf.Federation.ConfigurationLifetime {
+		conf.Signing.Federation.KeyRotation.Interval = conf.Federation.ConfigurationLifetime
 	}
-	if conf.Signing.OIDC.RolloverConf.Interval < conf.Federation.ConfigurationLifetime {
-		conf.Signing.OIDC.RolloverConf.Interval = conf.Federation.ConfigurationLifetime
+	if conf.Signing.OIDC.KeyRotation.Interval < conf.Federation.ConfigurationLifetime {
+		conf.Signing.OIDC.KeyRotation.Interval = conf.Federation.ConfigurationLifetime
 	}
 	if conf.Federation.UseEntityCollectionEndpoint {
 		log.Warn("federation.use_entity_collection_endpoint is deprecated; use op_discovery.local.use_resolve_endpoint instead")

@@ -133,7 +133,7 @@ func parseIDToken(issuer string, idToken string) (model.UserClaims, error) {
 		return nil, errors.Wrap(err, "id_token signature verification failed")
 	}
 	// Validate standard claims
-	return validateStandardJWTClaims(payload, opMetadata.Issuer, federationLeafEntity.EntityID)
+	return validateStandardJWTClaims(payload, opMetadata.Issuer, federationLeafEntity.EntityID())
 }
 
 // validateStandardJWTClaims checks iss equals expectedIssuer, aud contains expectedAud,
@@ -247,7 +247,7 @@ func mergeUserinfoClaims(issuer, accessToken string, userData model.UserClaims) 
 			log.WithError(verr).Error("userinfo JWT signature verification failed")
 			return
 		}
-		userInfoData, err = validateStandardJWTClaims(payload, opMetadata.Issuer, federationLeafEntity.EntityID)
+		userInfoData, err = validateStandardJWTClaims(payload, opMetadata.Issuer, federationLeafEntity.EntityID())
 		if err != nil {
 			log.WithError(err).Error("userinfo JWT claims validation failed")
 			return
