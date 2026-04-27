@@ -1,12 +1,16 @@
 package internal
 
 import (
+	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/go-oidfed/lib/jwx"
 	"github.com/go-oidfed/lib/jwx/keymanagement/kms"
 	"github.com/go-oidfed/lib/jwx/keymanagement/public"
 	"github.com/lestrrat-go/jwx/v3/jwa"
+	"github.com/zachmann/go-utils/fileutils"
 
 	"github.com/go-oidfed/offa/internal/config"
 )
@@ -15,6 +19,62 @@ var (
 	oidcSigner       jwx.VersatileSigner
 	federationSigner jwx.VersatileSigner
 )
+
+func migrateLegacyKeys(storagePath, typeID string, algs []string) {
+	// 1. Migrate Public Keys Metadata (keys.jwks -> typeID_public.json)
+	legacyJwksPath := filepath.Join(storagePath, "keys.jwks")
+	if fileutils.FileExists(legacyJwksPath) {
+		log.Printf("Found legacy keys.jwks, migrating public keys for %s...", typeID)
+		pks, err := public.NewFilesystemPublicKeyStorageFromLegacy(storagePath, typeID)
+		if err != nil {
+			log.Fatalf("Failed to migrate legacy public keys for %s: %v", typeID, err)
+		}
+		// Try to rename the old keys.jwks and history file so it isn't parsed again
+		// (We append .migrated. To avoid colliding if both OIDC and Federation try to rename the same keys.jwks, we ignore errors)
+		_ = os.Rename(legacyJwksPath, legacyJwksPath+".migrated")
+		legacyHistoryPath := filepath.Join(storagePath, fmt.Sprintf("%s_history.jwks", typeID))
+		if fileutils.FileExists(legacyHistoryPath) {
+			_ = os.Rename(legacyHistoryPath, legacyHistoryPath+".migrated")
+		}
+		_ = pks // public keys are now persisted to the new format internally
+	}
+
+	// 2. Migrate Private Keys (typeID_alg.pem -> kid.pem)
+	for _, aStr := range algs {
+		alg, ok := jwa.LookupSignatureAlgorithm(aStr)
+		if !ok {
+			continue // invalid algorithm will be caught during actual initialization
+		}
+
+		legacyPrivKeyPath := filepath.Join(storagePath, fmt.Sprintf("%s_%s.pem", typeID, alg.String()))
+		if !fileutils.FileExists(legacyPrivKeyPath) {
+			continue
+		}
+
+		log.Printf("Found legacy private key %s, migrating...", legacyPrivKeyPath)
+		signer, err := jwx.ReadSignerFromFile(legacyPrivKeyPath, alg)
+		if err != nil {
+			log.Fatalf("Failed to read legacy private key %s: %v", legacyPrivKeyPath, err)
+		}
+
+		// Calculate the kid
+		_, kid, err := jwx.SignerToPublicJWK(signer, alg)
+		if err != nil {
+			log.Fatalf("Failed to derive kid for legacy private key %s: %v", legacyPrivKeyPath, err)
+		}
+
+		// Write to new path {kid}.pem
+		newPrivKeyPath := filepath.Join(storagePath, fmt.Sprintf("%s.pem", kid))
+		if !fileutils.FileExists(newPrivKeyPath) {
+			if err := jwx.WriteSignerToFile(signer, newPrivKeyPath); err != nil {
+				log.Fatalf("Failed to write migrated private key %s: %v", newPrivKeyPath, err)
+			}
+		}
+
+		// Rename the old file so it's not processed again
+		_ = os.Rename(legacyPrivKeyPath, legacyPrivKeyPath+".migrated")
+	}
+}
 
 func createVersatileSigner(storagePath string, typeID string, c config.KeyStorageConf) jwx.VersatileSigner {
 	algs := make([]jwa.SignatureAlgorithm, 0, len(c.Algs))
@@ -92,6 +152,10 @@ func createSingleAlgVersatileSigner(storagePath string, typeID string, c config.
 // InitKeys initialized the signing keys
 func InitKeys() {
 	conf := config.Get().Signing
+
+	// Migrate legacy keys if present
+	migrateLegacyKeys(conf.KeyStorage, "oidc", conf.OIDC.Algs)
+	migrateLegacyKeys(conf.KeyStorage, "federation", conf.Federation.Algs)
 
 	oidcSigner = createVersatileSigner(conf.KeyStorage, "oidc", conf.OIDC)
 	federationSigner = createSingleAlgVersatileSigner(conf.KeyStorage, "federation", conf.Federation)
