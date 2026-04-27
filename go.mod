@@ -8,7 +8,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.18.0
 	github.com/go-oidfed/lib v0.8.4
 	github.com/go-resty/resty/v2 v2.17.2
-	github.com/gofiber/fiber/v2 v2.52.12
+	github.com/gofiber/fiber/v2 v2.52.13
 	github.com/gofiber/template/mustache/v2 v2.0.14
 	github.com/lestrrat-go/jwx/v3 v3.1.0
 	github.com/pkg/errors v0.9.1
