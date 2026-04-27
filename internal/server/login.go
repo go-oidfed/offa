@@ -120,7 +120,7 @@ func buildOPOptions() {
 			},
 		)
 		if ops != nil {
-			for _, op := range ops.FederationEntities {
+			for _, op := range ops.Entities {
 				allOPs[op.EntityID] = op
 			}
 		}

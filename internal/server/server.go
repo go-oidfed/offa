@@ -79,9 +79,9 @@ func initFederationEntity() {
 			PolicyURI:                   fedConfig.PolicyURI,
 			TOSURI:                      fedConfig.TOSURI,
 			TokenEndpointAuthMethod:     "private_key_jwt",
-			TokenEndpointAuthSigningAlg: config.Get().Signing.OIDC.DefaultAlgorithm,
-			UserinfoSignedResponseAlg:   config.Get().Signing.OIDC.DefaultAlgorithm,
-			IDTokenSignedResponseAlg:    config.Get().Signing.OIDC.DefaultAlgorithm,
+			TokenEndpointAuthSigningAlg: config.Get().Signing.OIDC.DefaultAlg,
+			UserinfoSignedResponseAlg:   config.Get().Signing.OIDC.DefaultAlg,
+			IDTokenSignedResponseAlg:    config.Get().Signing.OIDC.DefaultAlg,
 			InitiateLoginURI:            fullLoginPath,
 			SoftwareID:                  version.SOFTWAREID,
 			SoftwareVersion:             version.VERSION,
@@ -118,10 +118,32 @@ func initFederationEntity() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	federationLeafEntity.TrustMarks = fedConfig.TrustMarks
-	federationLeafEntity.MetadataUpdater = func(metadata *oidfed.Metadata) {
-		jwks := internal.OIDCSigner().JWKS()
-		metadata.RelyingParty.JWKS = &jwks
+	federationLeafEntity.TrustAnchors = fedConfig.TrustAnchors
+	federationLeafEntity.FederationEntity = oidfed.DynamicFederationEntity{
+		ID: federationLeafEntity.EntityID(),
+		Metadata: func() (*oidfed.Metadata, error) {
+			jwks, err := internal.OIDCSigner().JWKS()
+			if err != nil {
+				return nil, err
+			}
+			metadata.RelyingParty.JWKS = &jwks
+			return metadata, nil
+		},
+		AuthorityHints: func() ([]string, error) {
+			return fedConfig.AuthorityHints, nil
+		},
+		ConfigurationLifetime: func() (time.Duration, error) {
+			return fedConfig.ConfigurationLifetime.Duration(), nil
+		},
+		EntityStatementSigner: func() (*jwx.EntityStatementSigner, error) {
+			return jwx.NewEntityStatementSigner(internal.FederationSigner()), nil
+		},
+		TrustMarks: func() ([]*oidfed.EntityConfigurationTrustMarkConfig, error) {
+			return fedConfig.TrustMarks, nil
+		},
+		Extra: func() (map[string]any, []string, error) {
+			return fedConfig.ExtraEntityConfigurationData, nil, nil
+		},
 	}
 }
 
