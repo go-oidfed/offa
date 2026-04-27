@@ -6,9 +6,9 @@ require (
 	github.com/adam-hanna/arrayOperations v1.0.1
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
 	github.com/coreos/go-oidc/v3 v3.18.0
-	github.com/go-oidfed/lib v0.10.2
+	github.com/go-oidfed/lib v0.10.3
 	github.com/go-resty/resty/v2 v2.17.2
-	github.com/gofiber/fiber/v2 v2.52.12
+	github.com/gofiber/fiber/v2 v2.52.13
 	github.com/gofiber/template/mustache/v2 v2.0.14
 	github.com/lestrrat-go/jwx/v3 v3.1.0
 	github.com/pkg/errors v0.9.1
@@ -48,7 +48,7 @@ require (
 	github.com/lestrrat-go/option/v2 v2.0.0 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.21 // indirect
+	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/scylladb/go-set v1.0.3-0.20200225121959-cc7b2070d91e // indirect
