@@ -171,15 +171,13 @@ The `interval` option is used to set the interval at which keys should be
 rotated, i.e. this defines the lifetime of a key.
 This cannot be smaller than the lifetime of the Entity Configuration.
 
-#### `old_keys_kept_in_jwks`
-<span class="badge badge-purple" title="Value Type">number</span>
-<span class="badge badge-blue" title="Default Value">0</span>
+#### `overlap`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">`1h`</span>
 <span class="badge badge-green" title="If this option is required or optional">optional</span>
 
-The `old_keys_kept_in_jwks` option sets a number of old keys that are still 
-published in the `jwks` in the entity configuration. This option should only 
-be changed when it is needed. Usually, it will not be required to publish 
-old keys here.
+The `overlap` period between the current and next key. During this window, OFFA transitions to using the new key while 
+the old key's public key is still published.
 
 ## `oidc`
 
@@ -310,12 +308,10 @@ The `interval` option is used to set the interval at which keys should be
 rotated, i.e. this defines the lifetime of a key.
 This cannot be smaller than the lifetime of the Entity Configuration.
 
-#### `old_keys_kept_in_jwks`
-<span class="badge badge-purple" title="Value Type">number</span>
-<span class="badge badge-blue" title="Default Value">0</span>
+#### `overlap`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">`1h`</span>
 <span class="badge badge-green" title="If this option is required or optional">optional</span>
 
-The `old_keys_kept_in_jwks` option sets a number of old keys that are still
-published in the `jwks` in the entity configuration. This option should only
-be changed when it is needed. Usually, it will not be required to publish
-old keys here.
+The `overlap` period between the current and next key. During this window, OFFA transitions to using the new key while
+the old key's public key is still published.

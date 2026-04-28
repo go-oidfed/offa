@@ -366,6 +366,7 @@ func MustLoadConfig() {
 				KeyRotation: kms.KeyRotationConfig{
 					Enabled:  false,
 					Interval: duration.DurationOption(600000 * time.Second),
+					Overlap:  duration.DurationOption(1 * time.Hour),
 				},
 			},
 			OIDC: KeyStorageConf{
@@ -375,6 +376,7 @@ func MustLoadConfig() {
 				KeyRotation: kms.KeyRotationConfig{
 					Enabled:  false,
 					Interval: duration.DurationOption(600000 * time.Second),
+					Overlap:  duration.DurationOption(1 * time.Hour),
 				},
 			},
 		},
