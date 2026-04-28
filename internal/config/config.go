@@ -360,16 +360,18 @@ func MustLoadConfig() {
 		},
 		Signing: signingConf{
 			Federation: KeyStorageConf{
-				Alg:       "ES512",
-				RSAKeyLen: 2048,
+				GenerateKeys: true,
+				Alg:          "ES512",
+				RSAKeyLen:    2048,
 				KeyRotation: kms.KeyRotationConfig{
 					Enabled:  false,
 					Interval: duration.DurationOption(600000 * time.Second),
 				},
 			},
 			OIDC: KeyStorageConf{
-				DefaultAlg: "ES512",
-				RSAKeyLen:  2048,
+				GenerateKeys: true,
+				DefaultAlg:   "ES512",
+				RSAKeyLen:    2048,
 				KeyRotation: kms.KeyRotationConfig{
 					Enabled:  false,
 					Interval: duration.DurationOption(600000 * time.Second),
