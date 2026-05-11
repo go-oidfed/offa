@@ -144,6 +144,9 @@ func initFederationEntity() {
 		Extra: func() (map[string]any, []string, error) {
 			return fedConfig.ExtraEntityConfigurationData, nil, nil
 		},
+		ShouldApplyInformationalClaims: func() (bool, error) {
+			return config.Get().Federation.PublishInformationalClaimsInFederationEntity, nil
+		},
 	}
 }
 
