@@ -81,19 +81,23 @@ func initFederationEntity() {
 			TOSURI:                      fedConfig.TOSURI,
 			TokenEndpointAuthMethod:     "private_key_jwt",
 			TokenEndpointAuthSigningAlg: config.Get().Signing.OIDC.DefaultAlg,
-			UserinfoSignedResponseAlg:   config.Get().Signing.OIDC.DefaultAlg,
-			IDTokenSignedResponseAlg:    config.Get().Signing.OIDC.DefaultAlg,
-			InitiateLoginURI:            fullLoginPath,
-			SoftwareID:                  version.SOFTWAREID,
-			SoftwareVersion:             version.VERSION,
-			ClientRegistrationTypes:     fedConfig.ClientRegistrationTypes,
-			Extra:                       fedConfig.ExtraRPMetadata,
-			DisplayName:                 fedConfig.DisplayName,
-			Description:                 fedConfig.Description,
-			Keywords:                    fedConfig.Keywords,
-			InformationURI:              fedConfig.InformationURI,
-			OrganizationName:            fedConfig.OrganizationName,
-			OrganizationURI:             fedConfig.OrganizationURI,
+			TokenEndpointAuthSigningAlgValuesSupported: jwx.SupportedAlgsStrings(),
+			UserinfoSignedResponseAlg:                  config.Get().Signing.OIDC.DefaultAlg,
+			UserinfoSigningAlgValuesSupported:          jwx.SupportedAlgsStrings(),
+			IDTokenSignedResponseAlg:                   config.Get().Signing.OIDC.DefaultAlg,
+			IDTokenSigningAlgValuesSupported:           jwx.SupportedAlgsStrings(),
+			RequestObjectSigningAlgValuesSupported:     jwx.SupportedAlgsStrings(),
+			InitiateLoginURI:                           fullLoginPath,
+			SoftwareID:                                 version.SOFTWAREID,
+			SoftwareVersion:                            version.VERSION,
+			ClientRegistrationTypes:                    fedConfig.ClientRegistrationTypes,
+			Extra:                                      fedConfig.ExtraRPMetadata,
+			DisplayName:                                fedConfig.DisplayName,
+			Description:                                fedConfig.Description,
+			Keywords:                                   fedConfig.Keywords,
+			InformationURI:                             fedConfig.InformationURI,
+			OrganizationName:                           fedConfig.OrganizationName,
+			OrganizationURI:                            fedConfig.OrganizationURI,
 		},
 	}
 	if fedConfig.ExtraFEMetadata != nil && len(fedConfig.ExtraFEMetadata) > 0 {
@@ -102,10 +106,6 @@ func initFederationEntity() {
 	if metadata.RelyingParty.Extra == nil {
 		metadata.RelyingParty.Extra = make(map[string]any)
 	}
-	metadata.RelyingParty.Extra["id_token_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
-	metadata.RelyingParty.Extra["userinfo_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
-	metadata.RelyingParty.Extra["request_object_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
-	metadata.RelyingParty.Extra["token_endpoint_auth_signing_alg_values_supported"] = jwx.SupportedAlgsStrings()
 
 	if fedConfig.ExtraEntityConfigurationData == nil {
 		fedConfig.ExtraEntityConfigurationData = make(map[string]any)
