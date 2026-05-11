@@ -136,6 +136,7 @@ func initFederationEntity() {
 		AuthorityHints: func() ([]string, error) {
 			return fedConfig.AuthorityHints, nil
 		},
+		TrustAnchorHints: func() ([]string, error) { return fedConfig.TrustAnchors.EntityIDs(), nil },
 		ConfigurationLifetime: func() (time.Duration, error) {
 			return fedConfig.ConfigurationLifetime.Duration(), nil
 		},
