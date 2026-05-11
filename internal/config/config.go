@@ -78,6 +78,7 @@ type federationConf struct {
 	OrganizationName             string         `yaml:"organization_name"`
 	OrganizationURI              string         `yaml:"organization_uri"`
 	ExtraRPMetadata              map[string]any `yaml:"extra_rp_metadata"`
+	ExtraFEMetadata              map[string]any `yaml:"extra_fe_metadata"`
 	ExtraEntityConfigurationData map[string]any `yaml:"extra_entity_configuration_data"`
 
 	ConfigurationLifetime                        duration.DurationOption                      `yaml:"configuration_lifetime"`

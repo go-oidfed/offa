@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -94,6 +95,9 @@ func initFederationEntity() {
 			OrganizationName:            fedConfig.OrganizationName,
 			OrganizationURI:             fedConfig.OrganizationURI,
 		},
+	}
+	if fedConfig.ExtraFEMetadata != nil && len(fedConfig.ExtraFEMetadata) > 0 {
+		metadata.FederationEntity = applyExtraFEMetadata(fedConfig.ExtraFEMetadata)
 	}
 	if metadata.RelyingParty.Extra == nil {
 		metadata.RelyingParty.Extra = make(map[string]any)
@@ -194,4 +198,48 @@ func getFullPath(path string) string {
 		path = "/" + path
 	}
 	return config.Get().Server.Basepath + path
+}
+
+func applyExtraFEMetadata(extraFE map[string]any) *oidfed.FederationEntityMetadata {
+	fe := &oidfed.FederationEntityMetadata{}
+	v := reflect.ValueOf(fe).Elem()
+	t := v.Type()
+
+	jsonTagToField := make(map[string]string)
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag != "" && jsonTag != "-" {
+			if idx := strings.Index(jsonTag, ","); idx != -1 {
+				jsonTag = jsonTag[:idx]
+			}
+			jsonTagToField[jsonTag] = field.Name
+		}
+	}
+
+	for key, value := range extraFE {
+		if fieldName, ok := jsonTagToField[key]; ok {
+			field := v.FieldByName(fieldName)
+			if field.IsValid() && field.CanSet() {
+				switch field.Kind() {
+				case reflect.String:
+					if strVal, ok := value.(string); ok {
+						field.SetString(strVal)
+					}
+				case reflect.Slice:
+					if sliceVal, ok := value.([]interface{}); ok {
+						strSlice := make([]string, len(sliceVal))
+						for i, v := range sliceVal {
+							if str, ok := v.(string); ok {
+								strSlice[i] = str
+							}
+						}
+						field.Set(reflect.ValueOf(strSlice))
+					}
+				}
+			}
+		}
+	}
+
+	return fe
 }
