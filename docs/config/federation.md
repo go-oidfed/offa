@@ -249,6 +249,25 @@ The `extra_rp_metadata` option is used to add custom key-value pairs to the rely
             another_field: another_value
     ```
 
+## `extra_fe_metadata`
+<span class="badge badge-purple" title="Value Type">mapping / object</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `extra_fe_metadata` option is used to add custom key-value pairs to the `federation_entity` metadata section in the entity configuration.
+
+This option is applied **before** any automatic copying of informational claims (controlled by [`publish_informational_claims_in_federation_entity`](#publish_informational_claims_in_federation_entity)). This means that values specified in `extra_fe_metadata` take precedence over automatically copied claims. If a field is set in `extra_fe_metadata`, it will not be overwritten by the automatic copying mechanism.
+
+When `publish_informational_claims_in_federation_entity` is set to `true` (default), OFFA will still automatically copy consistent informational claims from other metadata sections to the federation entity metadata, but only for fields that are not already defined in `extra_fe_metadata`.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        extra_fe_metadata:
+            custom_federation_field: custom_value
+            another_federation_field: another_value
+    ```
+
 ## `extra_entity_configuration_data`
 <span class="badge badge-purple" title="Value Type">mapping / object</span>
 <span class="badge badge-green" title="If this option is required or optional">optional</span>
