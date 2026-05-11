@@ -184,6 +184,56 @@ The `organization_uri` option is used to set a URI to the organization's website
         organization_uri: https://organization.example.com
     ```
 
+## `publish_informational_claims_in_federation_entity`
+<span class="badge badge-purple" title="Value Type">boolean</span>
+<span class="badge badge-blue" title="Default Value">`true`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `publish_informational_claims_in_federation_entity` option controls whether informational metadata claims
+(such as `organization_name`, `display_name`, `contacts`, `policy_uri`, etc.) are published in both the
+`openid_relying_party` and `federation_entity` metadata sections of the Entity Configuration, or only in the
+`openid_relying_party` section.
+
+When set to `true` (default), OFFA automatically copies consistent informational claims from the relying party
+metadata to the federation entity metadata. This ensures that these claims are available at both levels of the
+federation hierarchy.
+
+When set to `false`, informational claims are only published in the `openid_relying_party` metadata section and
+are not duplicated in the `federation_entity` section. This can be useful if you want to keep the federation
+entity metadata minimal or if you want to explicitly control what appears in each metadata section separately.
+
+??? file "config.yaml"
+
+    ```yaml
+    federation:
+        # Publish informational claims in both relying_party and federation_entity (default)
+        publish_informational_claims_in_federation_entity: true
+    ```
+
+    ```yaml
+    federation:
+        # Only publish informational claims in relying_party, not in federation_entity
+        publish_informational_claims_in_federation_entity: false
+    ```
+
+!!! info "Informational Claims"
+
+    The following informational claims are affected by this setting:
+    
+    - `organization_name`
+    - `display_name`
+    - `description`
+    - `logo_uri`
+    - `policy_uri`
+    - `information_uri`
+    - `tos_uri`
+    - `contacts` (list)
+    - `keywords` (list)
+    
+    These claims are only copied to the federation entity metadata if they have consistent values across all 
+    metadata types that define them. If different values are specified for different metadata types, the claims 
+    are not copied to avoid conflicts.
+
 ## `extra_rp_metadata`
 <span class="badge badge-purple" title="Value Type">mapping / object</span>
 <span class="badge badge-green" title="If this option is required or optional">optional</span>

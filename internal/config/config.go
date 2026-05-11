@@ -80,14 +80,15 @@ type federationConf struct {
 	ExtraRPMetadata              map[string]any `yaml:"extra_rp_metadata"`
 	ExtraEntityConfigurationData map[string]any `yaml:"extra_entity_configuration_data"`
 
-	ConfigurationLifetime       duration.DurationOption                      `yaml:"configuration_lifetime"`
-	KeyStorage                  string                                       `yaml:"key_storage"`
-	ClientRegistrationTypes     []string                                     `yaml:"client_registration_types"`
-	TrustMarks                  []*oidfed.EntityConfigurationTrustMarkConfig `yaml:"trust_marks"`
-	UseResolveEndpoint          bool                                         `yaml:"use_resolve_endpoint"`
-	UseEntityCollectionEndpoint bool                                         `yaml:"use_entity_collection_endpoint"`
-	EntityCollectionInterval    duration.DurationOption                      `yaml:"entity_collection_interval"`
-	RequiredOPTrustMarks        []string                                     `yaml:"required_op_trust_marks"`
+	ConfigurationLifetime                        duration.DurationOption                      `yaml:"configuration_lifetime"`
+	KeyStorage                                   string                                       `yaml:"key_storage"`
+	ClientRegistrationTypes                      []string                                     `yaml:"client_registration_types"`
+	TrustMarks                                   []*oidfed.EntityConfigurationTrustMarkConfig `yaml:"trust_marks"`
+	UseResolveEndpoint                           bool                                         `yaml:"use_resolve_endpoint"`
+	UseEntityCollectionEndpoint                  bool                                         `yaml:"use_entity_collection_endpoint"`
+	EntityCollectionInterval                     duration.DurationOption                      `yaml:"entity_collection_interval"`
+	RequiredOPTrustMarks                         []string                                     `yaml:"required_op_trust_marks"`
+	PublishInformationalClaimsInFederationEntity bool                                         `yaml:"publish_informational_claims_in_federation_entity"`
 }
 
 type sessionConf struct {
@@ -347,6 +348,7 @@ func MustLoadConfig() {
 				oidfedconst.ClientRegistrationTypeAutomatic,
 				oidfedconst.ClientRegistrationTypeExplicit,
 			},
+			PublishInformationalClaimsInFederationEntity: true,
 		},
 		OPDiscovery: opDiscoveryConf{
 			Local: localOPDiscoveryConf{
