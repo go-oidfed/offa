@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/go-oidfed/lib/jwx"
 	"github.com/go-oidfed/lib/jwx/keymanagement/kms"
 )
 
@@ -21,5 +22,7 @@ func (c *KeyStorageConf) normalize() {
 		if len(c.Algs) == 0 {
 			c.Algs = []string{c.Alg}
 		}
+	} else if len(c.Algs) == 0 {
+		c.Algs = jwx.SupportedAlgsStrings()
 	}
 }

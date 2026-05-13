@@ -24,7 +24,10 @@ func migrateLegacyKeys(storagePath string) {
 	// 1. Migrate Public Keys Metadata (keys.jwks -> typeID_public.json)
 	legacyJwksPath := filepath.Join(storagePath, "keys.jwks")
 	if fileutils.FileExists(legacyJwksPath) {
-		for _, typeID := range []string{"oidc", "federation"} {
+		for _, typeID := range []string{
+			"oidc",
+			"federation",
+		} {
 			log.Printf("Found legacy keys.jwks, migrating public keys for %s...", typeID)
 			pks, err := public.NewFilesystemPublicKeyStorageFromLegacy(storagePath, typeID)
 			if err != nil {
@@ -41,7 +44,10 @@ func migrateLegacyKeys(storagePath string) {
 	}
 
 	// 2. Migrate Private Keys (typeID_alg.pem and typeID_algf.pem -> kid.pem)
-	for _, typeID := range []string{"oidc", "federation"} {
+	for _, typeID := range []string{
+		"oidc",
+		"federation",
+	} {
 		for _, aStr := range jwx.SupportedAlgsStrings() {
 			alg, ok := jwa.LookupSignatureAlgorithm(aStr)
 			if !ok {
@@ -49,8 +55,13 @@ func migrateLegacyKeys(storagePath string) {
 			}
 
 			// Check both regular and 'f' variants
-			for _, suffix := range []string{"", "f"} {
-				legacyPrivKeyPath := filepath.Join(storagePath, fmt.Sprintf("%s_%s%s.pem", typeID, alg.String(), suffix))
+			for _, suffix := range []string{
+				"",
+				"f",
+			} {
+				legacyPrivKeyPath := filepath.Join(
+					storagePath, fmt.Sprintf("%s_%s%s.pem", typeID, alg.String(), suffix),
+				)
 				if !fileutils.FileExists(legacyPrivKeyPath) {
 					continue
 				}
@@ -97,18 +108,24 @@ func createVersatileSigner(storagePath string, typeID string, c config.KeyStorag
 		log.Fatalf("invalid default algorithm %s", c.DefaultAlg)
 	}
 
-	k, err := kms.NewFilesystemKMSAndPublicKeyStorage(kms.FilesystemKMSConfig{
-		KMSConfig: kms.KMSConfig{
-			GenerateKeys: c.GenerateKeys,
-			Algs:         algs,
-			DefaultAlg:   defaultAlg,
-			RSAKeyLen:    c.RSAKeyLen,
-			KeyRotation:  c.KeyRotation,
+	k, err := kms.NewFilesystemKMSAndPublicKeyStorage(
+		kms.FilesystemKMSConfig{
+			KMSConfig: kms.KMSConfig{
+				GenerateKeys: c.GenerateKeys,
+				Algs:         algs,
+				DefaultAlg:   defaultAlg,
+				RSAKeyLen:    c.RSAKeyLen,
+				KeyRotation:  c.KeyRotation,
+			},
+			Dir:    storagePath,
+			TypeID: typeID,
 		},
-		Dir:    storagePath,
-		TypeID: typeID,
-	})
+	)
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = k.Load(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -138,16 +155,18 @@ func createSingleAlgVersatileSigner(storagePath string, typeID string, c config.
 		log.Fatal(err)
 	}
 
-	k := kms.NewSingleAlgFilesystemKMS(alg, kms.FilesystemKMSConfig{
-		KMSConfig: kms.KMSConfig{
-			GenerateKeys: c.GenerateKeys,
-			DefaultAlg:   defaultAlg,
-			RSAKeyLen:    c.RSAKeyLen,
-			KeyRotation:  c.KeyRotation,
-		},
-		Dir:    storagePath,
-		TypeID: typeID,
-	}, pks)
+	k := kms.NewSingleAlgFilesystemKMS(
+		alg, kms.FilesystemKMSConfig{
+			KMSConfig: kms.KMSConfig{
+				GenerateKeys: c.GenerateKeys,
+				DefaultAlg:   defaultAlg,
+				RSAKeyLen:    c.RSAKeyLen,
+				KeyRotation:  c.KeyRotation,
+			},
+			Dir:    storagePath,
+			TypeID: typeID,
+		}, pks,
+	)
 	if err := k.Load(); err != nil {
 		log.Fatal(err)
 	}
