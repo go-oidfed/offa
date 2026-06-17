@@ -34,6 +34,9 @@ func main() {
 		oidfed.DefaultMetadataResolver = oidfed.SmartRemoteMetadataResolver{}
 	}
 	server.Init()
+	if err := server.StartTAJWKSRefresher(); err != nil {
+		log.WithError(err).Fatal("could not start TA JWKS Refresher")
+	}
 	server.Start()
 }
 
@@ -61,6 +64,7 @@ func reload() {
 	}
 	logger.SetOutput()
 	logger.MustUpdateAccessLogger()
+	server.RestartTAJWKSRefresher()
 }
 
 func reloadLogFiles() {
