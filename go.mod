@@ -14,7 +14,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.20.1
 	github.com/sirupsen/logrus v1.9.4
-	github.com/valyala/fasthttp v1.71.0
+	github.com/valyala/fasthttp v1.72.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/zachmann/go-utils v0.0.0-20251216142941-208653c379f5
 	golang.org/x/oauth2 v0.36.0
@@ -58,7 +58,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
-	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 )
