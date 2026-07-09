@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/go-oidfed/lib/jwx"
 	"github.com/go-oidfed/lib/jwx/keymanagement/kms"
@@ -176,13 +177,20 @@ func createSingleAlgVersatileSigner(storagePath string, typeID string, c config.
 
 // InitKeys initialized the signing keys
 func InitKeys() {
-	conf := config.Get().Signing
+	conf := config.Get()
+	signingConf := conf.Signing
 
 	// Migrate legacy keys if present
-	migrateLegacyKeys(conf.KeyStorage)
+	migrateLegacyKeys(signingConf.KeyStorage)
 
-	oidcSigner = createVersatileSigner(conf.KeyStorage, "oidc", conf.OIDC)
-	federationSigner = createSingleAlgVersatileSigner(conf.KeyStorage, "federation", conf.Federation)
+	ecLifetimeFunc := func() (time.Duration, error) {
+		return conf.Federation.ConfigurationLifetime.Duration(), nil
+	}
+	signingConf.OIDC.KeyRotation.EntityConfigurationLifetimeFunc = ecLifetimeFunc
+	signingConf.Federation.KeyRotation.EntityConfigurationLifetimeFunc = ecLifetimeFunc
+
+	oidcSigner = createVersatileSigner(signingConf.KeyStorage, "oidc", signingConf.OIDC)
+	federationSigner = createSingleAlgVersatileSigner(signingConf.KeyStorage, "federation", signingConf.Federation)
 }
 
 // OIDCSigner returns the oidc jwx.VersatileSigner
