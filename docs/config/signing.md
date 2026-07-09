@@ -149,6 +149,8 @@ Under the `automatic_key_rollover` option key rollover / key rotation is configu
             automatic_key_rollover:
                 enabled: true
                 interval: 30d
+                overlap: 1h
+                key_announcement_lead_time: 7d
     ```
 
 #### `enabled`
@@ -178,6 +180,35 @@ This cannot be smaller than the lifetime of the Entity Configuration.
 
 The `overlap` period between the current and next key. During this window, OFFA transitions to using the new key while 
 the old key's public key is still published.
+
+#### `key_announcement_lead_time`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">`max(5 * configuration_lifetime, 24h)`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `key_announcement_lead_time` controls how far in advance a new signing key
+is published in the JWKS before it becomes the active signing key. This ensures
+clients that are temporarily unavailable (e.g., due to downtime or network
+issues) have sufficient time to fetch the new key before the old one is
+retired.
+
+If not set (or zero), the default of `max(5 * configuration_lifetime, 24h)` is
+used. If the configured value is shorter than the Entity Configuration lifetime,
+the EC lifetime is used as a minimum and a warning is logged.
+
+Takes precedence over the default, but is overridden by
+`key_announcement_lead_time_ec_multiplier` if that is also set.
+
+#### `key_announcement_lead_time_ec_multiplier`
+<span class="badge badge-purple" title="Value Type">number (float)</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+If set to a value greater than 0, the key announcement lead time is computed as
+this multiplier times the Entity Configuration lifetime. For example, `5` means
+the new key is published 5 EC lifetimes before it becomes active. This takes
+precedence over `key_announcement_lead_time`.
+
+The result is clamped to a minimum of the EC lifetime.
 
 ## `oidc`
 
@@ -286,6 +317,8 @@ Under the `automatic_key_rollover` option key rollover / key rotation is configu
             automatic_key_rollover:
                 enabled: true
                 interval: 30d
+                overlap: 1h
+                key_announcement_lead_time: 7d
     ```
 
 #### `enabled`
@@ -315,3 +348,33 @@ This cannot be smaller than the lifetime of the Entity Configuration.
 
 The `overlap` period between the current and next key. During this window, OFFA transitions to using the new key while
 the old key's public key is still published.
+
+#### `key_announcement_lead_time`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">`max(5 * configuration_lifetime, 24h)`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `key_announcement_lead_time` controls how far in advance a new signing key
+is published in the JWKS before it becomes the active signing key. This ensures
+clients that are temporarily unavailable (e.g., due to downtime or network
+issues) have sufficient time to fetch the new key before the old one is
+retired.
+
+If not set (or zero), the default of `max(5 * configuration_lifetime, 24h)` is
+used. If the configured value is shorter than the Entity Configuration lifetime,
+the EC lifetime is used as a minimum and a warning is logged.
+
+Takes precedence over the default, but is overridden by
+`key_announcement_lead_time_ec_multiplier` if that is also set.
+
+#### `key_announcement_lead_time_ec_multiplier`
+<span class="badge badge-purple" title="Value Type">number (float)</span>
+<span class="badge badge-blue" title="Default Value">`0` (disabled)</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+If set to a value greater than 0, the key announcement lead time is computed as
+this multiplier times the Entity Configuration lifetime. For example, `5` means
+the new key is published 5 EC lifetimes before it becomes active. This takes
+precedence over `key_announcement_lead_time`.
+
+The result is clamped to a minimum of the EC lifetime.
