@@ -94,7 +94,7 @@ func migrateLegacyKeys(storagePath string) {
 	}
 }
 
-func createVersatileSigner(storagePath string, typeID string, c config.KeyStorageConf) jwx.VersatileSigner {
+func createVersatileSigner(storagePath string, typeID string, c config.KeyStorageConf) (jwx.VersatileSigner, kms.KeyManagementSystem) {
 	algs := make([]jwa.SignatureAlgorithm, 0, len(c.Algs))
 	for _, a := range c.Algs {
 		alg, ok := jwa.LookupSignatureAlgorithm(a)
@@ -130,10 +130,10 @@ func createVersatileSigner(storagePath string, typeID string, c config.KeyStorag
 		log.Fatal(err)
 	}
 
-	return kms.KMSToVersatileSignerWithPKStorage(k, k.(*kms.FilesystemKMS).PKs)
+	return kms.KMSToVersatileSignerWithPKStorage(k, k.(*kms.FilesystemKMS).PKs), k
 }
 
-func createSingleAlgVersatileSigner(storagePath string, typeID string, c config.KeyStorageConf) jwx.VersatileSigner {
+func createSingleAlgVersatileSigner(storagePath string, typeID string, c config.KeyStorageConf) (jwx.VersatileSigner, kms.KeyManagementSystem) {
 	if len(c.Algs) != 1 {
 		log.Fatalf("expected exactly one algorithm for %s, got %d", typeID, len(c.Algs))
 	}
@@ -172,7 +172,7 @@ func createSingleAlgVersatileSigner(storagePath string, typeID string, c config.
 		log.Fatal(err)
 	}
 
-	return kms.KMSToVersatileSignerWithPKStorage(k, pks)
+	return kms.KMSToVersatileSignerWithPKStorage(k, pks), k
 }
 
 // InitKeys initialized the signing keys
@@ -189,8 +189,20 @@ func InitKeys() {
 	signingConf.OIDC.KeyRotation.EntityConfigurationLifetimeFunc = ecLifetimeFunc
 	signingConf.Federation.KeyRotation.EntityConfigurationLifetimeFunc = ecLifetimeFunc
 
-	oidcSigner = createVersatileSigner(signingConf.KeyStorage, "oidc", signingConf.OIDC)
-	federationSigner = createSingleAlgVersatileSigner(signingConf.KeyStorage, "federation", signingConf.Federation)
+	var oidcKMS, federationKMS kms.KeyManagementSystem
+	oidcSigner, oidcKMS = createVersatileSigner(signingConf.KeyStorage, "oidc", signingConf.OIDC)
+	federationSigner, federationKMS = createSingleAlgVersatileSigner(signingConf.KeyStorage, "federation", signingConf.Federation)
+
+	if signingConf.OIDC.KeyRotation.Enabled {
+		if err := oidcKMS.StartAutomaticRotation(); err != nil {
+			log.Fatalf("could not start automatic key rotation for oidc keys: %v", err)
+		}
+	}
+	if signingConf.Federation.KeyRotation.Enabled {
+		if err := federationKMS.StartAutomaticRotation(); err != nil {
+			log.Fatalf("could not start automatic key rotation for federation keys: %v", err)
+		}
+	}
 }
 
 // OIDCSigner returns the oidc jwx.VersatileSigner
