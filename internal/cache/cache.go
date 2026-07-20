@@ -8,11 +8,11 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
-	log "github.com/sirupsen/logrus"
 
 	fedcache "github.com/go-oidfed/lib/cache"
 
 	"github.com/go-oidfed/offa/internal/config"
+	log "github.com/go-oidfed/offa/internal/logger"
 	"github.com/go-oidfed/offa/internal/model"
 )
 

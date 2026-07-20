@@ -8,10 +8,10 @@ import (
 	"github.com/go-oidfed/lib/apimodel"
 	"github.com/go-oidfed/lib/oidfedconst"
 	"github.com/gofiber/fiber/v2"
-	log "github.com/sirupsen/logrus"
 	"github.com/zachmann/go-utils/ctxutils"
 
 	"github.com/go-oidfed/offa/internal/config"
+	log "github.com/go-oidfed/offa/internal/logger"
 )
 
 type postLoginRequest struct {

@@ -98,20 +98,32 @@ Supported values are:
 - `ES256`
 - `ES384`
 - `ES512`
-- `EdDSA` (ed25519)
+- `ES256K` (ECDSA over the secp256k1 curve)
+- `EdDSA` (EdDSA, ed25519)
+- `Ed25519` (Ed25519)
+- `Ed448` (Ed448)
 - `RS256`
 - `RS384`
 - `RS512`
 - `PS256`
 - `PS384`
 - `PS512`
+- `ML-DSA-44` (post-quantum, NIST FIPS 204)
+- `ML-DSA-65` (post-quantum, NIST FIPS 204)
+- `ML-DSA-87` (post-quantum, NIST FIPS 204)
+- `ML-DSA-44-ES256` (composite ML-DSA-44 + ES256)
+- `ML-DSA-65-ES256` (composite ML-DSA-65 + ES256)
+- `ML-DSA-87-ES384` (composite ML-DSA-87 + ES384)
+- `ML-DSA-44-Ed25519` (composite ML-DSA-44 + Ed25519)
+- `ML-DSA-65-Ed25519` (composite ML-DSA-65 + Ed25519)
+- `ML-DSA-87-Ed448` (composite ML-DSA-87 + Ed448)
 
 ??? file "config.yaml"
 
     ```yaml
     signing:
         federation:
-            alg: EdDSA
+            alg: Ed25519
     ```
 
 
@@ -246,15 +258,38 @@ Supported values are:
 - `ES256`
 - `ES384`
 - `ES512`
-- `EdDSA` (ed25519)
+- `ES256K` (ECDSA over the secp256k1 curve)
+- `EdDSA` (EdDSA, ed25519)
+- `Ed25519` (Ed25519)
+- `Ed448` (Ed448)
 - `RS256`
 - `RS384`
 - `RS512`
 - `PS256`
 - `PS384`
 - `PS512`
+- `ML-DSA-44` (post-quantum, NIST FIPS 204)
+- `ML-DSA-65` (post-quantum, NIST FIPS 204)
+- `ML-DSA-87` (post-quantum, NIST FIPS 204)
+- `ML-DSA-44-ES256` (composite ML-DSA-44 + ES256)
+- `ML-DSA-65-ES256` (composite ML-DSA-65 + ES256)
+- `ML-DSA-87-ES384` (composite ML-DSA-87 + ES384)
+- `ML-DSA-44-Ed25519` (composite ML-DSA-44 + Ed25519)
+- `ML-DSA-65-Ed25519` (composite ML-DSA-65 + Ed25519)
+- `ML-DSA-87-Ed448` (composite ML-DSA-87 + Ed448)
 
-By default, all supported algorithms are allowed.
+By default, the following algorithms are allowed:
+- `ES256`
+- `ES384`
+- `ES512`
+- `Ed25519` (Ed25519)
+- `Ed448` (Ed448)
+- `RS256`
+- `RS384`
+- `RS512`
+- `PS256`
+- `PS384`
+- `PS512`
 
 ??? file "config.yaml"
 
@@ -265,7 +300,7 @@ By default, all supported algorithms are allowed.
                 - ES512
                 - ES384
                 - ES256
-                - EdDSA
+                - Ed448
     ```
 
 ### `default_alg`

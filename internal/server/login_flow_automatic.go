@@ -10,15 +10,15 @@ import (
 
 	oidfed "github.com/go-oidfed/lib"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lestrrat-go/jwx/v3/jwk"
-	"github.com/lestrrat-go/jwx/v3/jws"
+	"github.com/lestrrat-go/jwx/v4/jwk"
+	"github.com/lestrrat-go/jwx/v4/jws"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	zutils "github.com/zachmann/go-utils"
 
 	"github.com/go-oidfed/offa/internal/cache"
 	"github.com/go-oidfed/offa/internal/config"
 	ihttp "github.com/go-oidfed/offa/internal/http"
+	log "github.com/go-oidfed/offa/internal/logger"
 	"github.com/go-oidfed/offa/internal/model"
 	"github.com/go-oidfed/offa/internal/pkce"
 )

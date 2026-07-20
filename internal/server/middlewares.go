@@ -13,10 +13,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/go-oidfed/offa/internal/config"
-	logger2 "github.com/go-oidfed/offa/internal/logger"
+	log "github.com/go-oidfed/offa/internal/logger"
 )
 
 func addMiddlewares(s fiber.Router) {
@@ -35,7 +34,7 @@ func addLoggerMiddleware(s fiber.Router) {
 			logger.Config{
 				Format:     "${time} ${ip} ${ua} ${latency} - ${status} ${method} ${path} ${locals:requestid}\n",
 				TimeFormat: "2006-01-02 15:04:05",
-				Output:     logger2.MustGetAccessLogger(),
+				Output:     log.MustGetAccessLogger(),
 			},
 		),
 	)

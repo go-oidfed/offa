@@ -5,8 +5,9 @@ import (
 	"encoding/base64"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack/v5"
+
+	log "github.com/go-oidfed/offa/internal/logger"
 )
 
 // PKCE is a type holding the information for a PKCE flow

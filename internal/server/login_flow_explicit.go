@@ -6,12 +6,12 @@ import (
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gofiber/fiber/v2"
-	log "github.com/sirupsen/logrus"
 	zutils "github.com/zachmann/go-utils"
 	"golang.org/x/oauth2"
 
 	"github.com/go-oidfed/offa/internal/cache"
 	"github.com/go-oidfed/offa/internal/config"
+	log "github.com/go-oidfed/offa/internal/logger"
 	"github.com/go-oidfed/offa/internal/model"
 	"github.com/go-oidfed/offa/internal/pkce"
 )

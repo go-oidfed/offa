@@ -5,6 +5,14 @@ icon: material/script-text
 Under the `logging` config option the logging behavior and locations can be 
 configured.
 
+OFFA logs are produced with [zerolog](https://github.com/rs/zerolog) and written
+as human-readable, no-color console text (one line per entry, prefixed with an
+RFC 3339 timestamp and the level, e.g. `2026-01-01T12:00:00Z INF message`).
+Structured fields (such as the request id or an attached error) are appended as
+`key=value` pairs on the same line. The go-oidfed library's internal logs are
+routed to the same destination and level as OFFA's internal logs, so all log
+output is consolidated.
+
 ## `access`
 <span class="badge badge-purple" title="Value Type">object</span>
 <span class="badge badge-green" title="If this option is required or optional">recommended</span>

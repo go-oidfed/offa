@@ -9,10 +9,10 @@ import (
 	"github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/jwx"
 	"github.com/gofiber/fiber/v2"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/go-oidfed/offa/internal"
 	"github.com/go-oidfed/offa/internal/config"
+	log "github.com/go-oidfed/offa/internal/logger"
 	"github.com/go-oidfed/offa/internal/version"
 )
 

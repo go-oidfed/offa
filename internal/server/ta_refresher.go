@@ -5,9 +5,9 @@ import (
 
 	oidfed "github.com/go-oidfed/lib"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/go-oidfed/offa/internal/config"
+	log "github.com/go-oidfed/offa/internal/logger"
 )
 
 var taJWKSRefresher *oidfed.TAJWKSRefresher

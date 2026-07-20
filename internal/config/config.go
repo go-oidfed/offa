@@ -11,11 +11,11 @@ import (
 	"github.com/go-oidfed/lib/jwx/keymanagement/kms"
 	"github.com/go-oidfed/lib/oidfedconst"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/zachmann/go-utils/duration"
 	"github.com/zachmann/go-utils/fileutils"
 	"gopkg.in/yaml.v3"
 
+	log "github.com/go-oidfed/offa/internal/logger"
 	"github.com/go-oidfed/offa/internal/model"
 )
 
@@ -304,6 +304,8 @@ func validate() error {
 	}
 	conf.Signing.Federation.normalize()
 	conf.Signing.OIDC.normalize()
+	conf.Signing.Federation.validateAlgs("federation")
+	conf.Signing.OIDC.validateAlgs("oidc")
 	if len(conf.Signing.Federation.Algs) != 1 {
 		return errors.New("federation signing config must have exactly one algorithm")
 	}
