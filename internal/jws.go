@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/jwx"
 	"github.com/go-oidfed/lib/jwx/keymanagement/kms"
 	"github.com/go-oidfed/lib/jwx/keymanagement/public"
@@ -94,7 +95,7 @@ func migrateLegacyKeys(storagePath string) {
 	}
 }
 
-func createVersatileSigner(storagePath string, typeID string, c config.KeyStorageConf) (jwx.VersatileSigner, kms.KeyManagementSystem) {
+func createVersatileSigner(storagePath, typeID, entityID string, c config.KeyStorageConf) (jwx.VersatileSigner, kms.KeyManagementSystem) {
 	algs := make([]jwa.SignatureAlgorithm, 0, len(c.Algs))
 	for _, a := range c.Algs {
 		alg, ok := jwa.LookupSignatureAlgorithm(a)
@@ -117,6 +118,7 @@ func createVersatileSigner(storagePath string, typeID string, c config.KeyStorag
 				DefaultAlg:   defaultAlg,
 				RSAKeyLen:    c.RSAKeyLen,
 				KeyRotation:  c.KeyRotation,
+				EntityID:     entityID,
 			},
 			Dir:    storagePath,
 			TypeID: typeID,
@@ -133,7 +135,7 @@ func createVersatileSigner(storagePath string, typeID string, c config.KeyStorag
 	return kms.KMSToVersatileSignerWithPKStorage(k, k.(*kms.FilesystemKMS).PKs), k
 }
 
-func createSingleAlgVersatileSigner(storagePath string, typeID string, c config.KeyStorageConf) (jwx.VersatileSigner, kms.KeyManagementSystem) {
+func createSingleAlgVersatileSigner(storagePath, typeID, entityID string, c config.KeyStorageConf) (jwx.VersatileSigner, kms.KeyManagementSystem) {
 	if len(c.Algs) != 1 {
 		log.Fatalf("expected exactly one algorithm for %s, got %d", typeID, len(c.Algs))
 	}
@@ -163,6 +165,7 @@ func createSingleAlgVersatileSigner(storagePath string, typeID string, c config.
 				DefaultAlg:   defaultAlg,
 				RSAKeyLen:    c.RSAKeyLen,
 				KeyRotation:  c.KeyRotation,
+				EntityID:     entityID,
 			},
 			Dir:    storagePath,
 			TypeID: typeID,
@@ -190,8 +193,23 @@ func InitKeys() {
 	signingConf.Federation.KeyRotation.EntityConfigurationLifetimeFunc = ecLifetimeFunc
 
 	var oidcKMS, federationKMS kms.KeyManagementSystem
-	oidcSigner, oidcKMS = createVersatileSigner(signingConf.KeyStorage, "oidc", signingConf.OIDC)
-	federationSigner, federationKMS = createSingleAlgVersatileSigner(signingConf.KeyStorage, "federation", signingConf.Federation)
+	oidcSigner, oidcKMS = createVersatileSigner(signingConf.KeyStorage, "oidc", conf.Federation.EntityID, signingConf.OIDC)
+	federationSigner, federationKMS = createSingleAlgVersatileSigner(signingConf.KeyStorage, "federation", conf.Federation.EntityID, signingConf.Federation)
+
+	// Build key rotation hooks that optionally sync rotated federation keys to
+	// authority hints. Each authority hint may independently opt into one of
+	// two sync modes:
+	//   - "push":    push a signed JWK Set to the hint's federation_jwks_update_endpoint
+	//   - "trigger": POST the entity_id to the hint's federation_jwks_update_trigger_endpoint
+	// Hooks are attached before StartAutomaticRotation so they fire on every
+	// scheduled rotation (but not on the initial seeding done during Load()).
+	hooks := buildAuthorityHintJWKSSyncHooks(conf.Federation.EntityID, federationSigner, conf.Federation.AuthorityHints)
+	if len(hooks) > 0 {
+		signingConf.Federation.KeyRotation.Hooks = hooks
+		if err := federationKMS.ChangeKeyRotationConfig(signingConf.Federation.KeyRotation); err != nil {
+			log.Fatalf("could not attach jwks sync hooks to federation key rotation: %v", err)
+		}
+	}
 
 	if signingConf.OIDC.KeyRotation.Enabled {
 		if err := oidcKMS.StartAutomaticRotation(); err != nil {
@@ -213,4 +231,60 @@ func OIDCSigner() jwx.VersatileSigner {
 // FederationSigner returns the federation jwx.VersatileSigner
 func FederationSigner() jwx.VersatileSigner {
 	return federationSigner
+}
+
+// triggerAssertionLifetime is the lifetime of the private_key_jwt client
+// assertion used to authenticate to a trigger endpoint. Not configurable.
+const triggerAssertionLifetime = time.Minute
+
+// buildAuthorityHintJWKSSyncHooks builds the key rotation hooks that sync
+// rotated federation keys to the configured authority hints. Each hint with a
+// non-none jwks_sync.mode produces one hook. The returned slice is empty if no
+// hint opts into syncing. Construction errors are fatal: they indicate
+// misconfiguration (e.g. a missing signer), which should surface at startup.
+func buildAuthorityHintJWKSSyncHooks(
+	entityID string, signer jwx.VersatileSigner, hints config.AuthorityHintList,
+) []kms.KeyRotationHook {
+	var hooks []kms.KeyRotationHook
+	// The ROProducer is only needed for trigger mode; build it lazily.
+	var roProducer *oidfed.RequestObjectProducer
+	for _, hint := range hints {
+		switch hint.JWKSSync.Mode {
+		case "", config.JWKSSyncNone:
+			continue
+		case config.JWKSSyncPush:
+			hook, err := oidfed.JWKSUpdateHook(oidfed.JWKSUpdateHookConfig{
+				TargetEntityID: hint.EntityID,
+				Signer:         signer,
+				JWTLifetime:    hint.JWKSSync.JWTLifetime.Duration(),
+				Headers:        hint.JWKSSync.Headers,
+				Timeout:        hint.JWKSSync.Timeout.Duration(),
+			})
+			if err != nil {
+				log.Fatalf(
+					"could not build jwks sync (push) hook for authority hint %q: %v",
+					hint.EntityID, err,
+				)
+			}
+			hooks = append(hooks, hook)
+		case config.JWKSSyncTrigger:
+			if roProducer == nil {
+				roProducer = oidfed.NewRequestObjectProducer(entityID, signer, triggerAssertionLifetime)
+			}
+			hook, err := oidfed.TriggerUpdateHook(oidfed.TriggerUpdateHookConfig{
+				TargetEntityID: hint.EntityID,
+				ROProducer:     roProducer,
+				Headers:        hint.JWKSSync.Headers,
+				Timeout:        hint.JWKSSync.Timeout.Duration(),
+			})
+			if err != nil {
+				log.Fatalf(
+					"could not build jwks sync (trigger) hook for authority hint %q: %v",
+					hint.EntityID, err,
+				)
+			}
+			hooks = append(hooks, hook)
+		}
+	}
+	return hooks
 }

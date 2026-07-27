@@ -62,7 +62,7 @@ type signingConf struct {
 type federationConf struct {
 	EntityID       string              `yaml:"entity_id"`
 	TrustAnchors   oidfed.TrustAnchors `yaml:"trust_anchors"`
-	AuthorityHints []string            `yaml:"authority_hints"`
+	AuthorityHints AuthorityHintList   `yaml:"authority_hints"`
 
 	Scopes                       []string       `yaml:"scopes"`
 	ClientName                   string         `yaml:"client_name"`
@@ -301,6 +301,15 @@ func validate() error {
 	}
 	if err := conf.SessionStorage.validate(); err != nil {
 		return err
+	}
+	if err := conf.Federation.AuthorityHints.validate(); err != nil {
+		return err
+	}
+	if conf.Federation.AuthorityHints.HasSyncMode() && !conf.Signing.Federation.KeyRotation.Enabled {
+		log.Warn(
+			"authority_hints: jwks_sync is configured but signing.federation.automatic_key_rollover.enabled is false; " +
+				"keys will not be rotated, so jwks_sync will never fire",
+		)
 	}
 	conf.Signing.Federation.normalize()
 	conf.Signing.OIDC.normalize()

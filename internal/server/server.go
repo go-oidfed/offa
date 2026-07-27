@@ -113,7 +113,7 @@ func initFederationEntity() {
 	fedConfig.ExtraEntityConfigurationData["offa_version"] = version.VERSION
 	var err error
 	federationLeafEntity, err = oidfed.NewFederationLeaf(
-		fedConfig.EntityID, fedConfig.AuthorityHints, fedConfig.TrustAnchors, metadata,
+		fedConfig.EntityID, fedConfig.AuthorityHints.EntityIDs(), fedConfig.TrustAnchors, metadata,
 		jwx.NewEntityStatementSigner(
 			internal.FederationSigner(),
 		), fedConfig.ConfigurationLifetime.Duration(), internal.OIDCSigner(),
@@ -134,7 +134,7 @@ func initFederationEntity() {
 			return metadata, nil
 		},
 		AuthorityHints: func() ([]string, error) {
-			return fedConfig.AuthorityHints, nil
+			return fedConfig.AuthorityHints.EntityIDs(), nil
 		},
 		TrustAnchorHints: func() ([]string, error) { return fedConfig.TrustAnchors.EntityIDs(), nil },
 		ConfigurationLifetime: func() (time.Duration, error) {
