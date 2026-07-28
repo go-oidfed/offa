@@ -6,7 +6,7 @@ require (
 	github.com/adam-hanna/arrayOperations v1.0.1
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
 	github.com/coreos/go-oidc/v3 v3.20.0
-	github.com/go-oidfed/lib v0.10.13-0.20260727113417-781359ddaac1
+	github.com/go-oidfed/lib v0.10.13-0.20260728133522-ae8a60cea9eb
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/gofiber/fiber/v2 v2.52.14
 	github.com/gofiber/template/mustache/v2 v2.0.14
@@ -14,7 +14,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.21.0
 	github.com/rs/zerolog v1.35.1
-	github.com/valyala/fasthttp v1.72.0
+	github.com/valyala/fasthttp v1.73.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/zachmann/go-utils v0.0.0-20260709061248-d06e3e0557c4
 	golang.org/x/oauth2 v0.36.0
@@ -23,7 +23,6 @@ require (
 
 require (
 	filippo.io/mldsa v0.0.0-20260711112038-ff3f469cee29 // indirect
-	github.com/ThalesGroup/crypto11 v1.6.4 // indirect
 	github.com/TwiN/gocache/v2 v2.4.0 // indirect
 	github.com/andybalholm/brotli v1.2.2 // indirect
 	github.com/cbroglie/mustache v1.4.0 // indirect
@@ -31,13 +30,14 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/cloudflare/circl v1.6.4 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
+	github.com/eclipse-keypont/crypto11 v1.6.5 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/utils v1.2.0 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/jarcoal/httpmock v1.4.1 // indirect
+	github.com/jarcoal/httpmock v1.4.2 // indirect
 	github.com/jwx-go/compsig/v4 v4.0.4 // indirect
 	github.com/jwx-go/ed448/v4 v4.0.4 // indirect
 	github.com/jwx-go/es256k/v4 v4.0.4 // indirect
