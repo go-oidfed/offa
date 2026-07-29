@@ -73,11 +73,9 @@ func GetSSHRequestLogger(sessionID string) *zerolog.Logger {
 
 func getIDLogger(id string) *zerolog.Logger {
 	if !settings.Internal.Smart.Enabled {
-		lg := Log.With().Str("requestid", id).Logger()
-		return &lg
+		return new(Log.With().Str("requestid", id).Logger())
 	}
-	lg := newSmartLogger(id)
-	return &lg
+	return new(newSmartLogger(id))
 }
 
 // lazyFileWriter opens its target file on first Write so that per-request error
@@ -91,14 +89,16 @@ type lazyFileWriter struct {
 }
 
 func (w *lazyFileWriter) Write(p []byte) (int, error) {
-	w.once.Do(func() {
-		f, err := getFile(filepath.Join(w.dir, w.id))
-		if err != nil {
-			w.err = err
-			return
-		}
-		w.file = f
-	})
+	w.once.Do(
+		func() {
+			f, err := getFile(filepath.Join(w.dir, w.id))
+			if err != nil {
+				w.err = err
+				return
+			}
+			w.file = f
+		},
+	)
 	if w.err != nil {
 		return 0, w.err
 	}

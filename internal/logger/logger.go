@@ -23,11 +23,13 @@ import (
 var Log = defaultLogger()
 
 func defaultLogger() zerolog.Logger {
-	return zerolog.New(zerolog.ConsoleWriter{
-		Out:        os.Stderr,
-		NoColor:    true,
-		TimeFormat: time.RFC3339,
-	}).With().Timestamp().Logger().Level(zerolog.InfoLevel)
+	return zerolog.New(
+		zerolog.ConsoleWriter{
+			Out:        os.Stderr,
+			NoColor:    true,
+			TimeFormat: time.RFC3339,
+		},
+	).With().Timestamp().Logger().Level(zerolog.InfoLevel)
 }
 
 // LogOutputSettings describes a log destination: optionally a directory holding
@@ -277,22 +279,28 @@ func (f *FieldLogger) Fatalf(format string, args ...any) {
 // WithError returns a FieldLogger that attaches the given error to all
 // subsequent log statements, mirroring logrus.WithError.
 func WithError(err error) *FieldLogger {
-	l := Log
-	return &FieldLogger{logger: &l, err: err}
+	return &FieldLogger{
+		logger: new(Log),
+		err:    err,
+	}
 }
 
 // WithField returns a FieldLogger that attaches a single structured field to
 // all subsequent log statements, mirroring logrus.WithField.
 func WithField(key string, value any) *FieldLogger {
-	l := Log
-	return &FieldLogger{logger: &l, fields: Fields{key: value}}
+	return &FieldLogger{
+		logger: new(Log),
+		fields: Fields{key: value},
+	}
 }
 
 // WithFields returns a FieldLogger that attaches multiple structured fields to
 // all subsequent log statements, mirroring logrus.WithFields.
 func WithFields(fields Fields) *FieldLogger {
-	l := Log
-	return &FieldLogger{logger: &l, fields: fields}
+	return &FieldLogger{
+		logger: new(Log),
+		fields: fields,
+	}
 }
 
 // Package-level terminal helpers (operate on Log)
