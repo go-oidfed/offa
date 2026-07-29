@@ -207,8 +207,8 @@ func applyExtraFEMetadata(extraFE map[string]any) *oidfed.FederationEntityMetada
 	t := v.Type()
 
 	jsonTagToField := make(map[string]string)
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
+	for field := range t.Fields() {
+		field := field
 		jsonTag := field.Tag.Get("json")
 		if jsonTag != "" && jsonTag != "-" {
 			if idx := strings.Index(jsonTag, ","); idx != -1 {
@@ -228,7 +228,7 @@ func applyExtraFEMetadata(extraFE map[string]any) *oidfed.FederationEntityMetada
 						field.SetString(strVal)
 					}
 				case reflect.Slice:
-					if sliceVal, ok := value.([]interface{}); ok {
+					if sliceVal, ok := value.([]any); ok {
 						strSlice := make([]string, len(sliceVal))
 						for i, v := range sliceVal {
 							if str, ok := v.(string); ok {

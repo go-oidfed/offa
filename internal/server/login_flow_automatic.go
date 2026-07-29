@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"maps"
 	"mime"
 	"net/url"
 	"slices"
@@ -260,9 +261,7 @@ func mergeUserinfoClaims(issuer, accessToken string, userData model.UserClaims) 
 	}
 
 	normalizeClaims(userInfoData)
-	for k, v := range userInfoData {
-		userData[k] = v
-	}
+	maps.Copy(userData, userInfoData)
 	log.Debugf("Merged userinfo (JSON) claims: %+v", userInfoData)
 }
 

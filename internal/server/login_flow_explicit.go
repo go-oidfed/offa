@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"maps"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -135,8 +136,6 @@ func codeExchangeExplicit(
 		return userData, nil
 	}
 	log.Debugf("Userclaims from userinfo: %+v", userData)
-	for k, v := range userInfoData {
-		userData[k] = v
-	}
+	maps.Copy(userData, userInfoData)
 	return userData, nil
 }

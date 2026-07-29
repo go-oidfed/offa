@@ -79,7 +79,7 @@ func renderHeaders(c *fiber.Ctx, headers map[string][]string) error {
 		},
 	)
 	return render(
-		c, "user", map[string]interface{}{
+		c, "user", map[string]any{
 			"headers":  hd,
 			"username": c.Get("X-Forwarded-User"),
 		},

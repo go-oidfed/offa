@@ -46,7 +46,7 @@ func addLoginHandlers(s fiber.Router) {
 
 func showLoginPage(c *fiber.Ctx) error {
 	return render(
-		c, "login", map[string]interface{}{
+		c, "login", map[string]any{
 			"client_name": config.Get().Federation.ClientName,
 			"logo_uri":    config.Get().Federation.LogoURI,
 			"login-path":  config.Get().Server.Paths.Login,
