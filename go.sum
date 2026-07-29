@@ -37,6 +37,8 @@ github.com/go-jose/go-jose/v4 v4.1.4 h1:moDMcTHmvE6Groj34emNPLs/qtYXRVcd6S7NHbHz
 github.com/go-jose/go-jose/v4 v4.1.4/go.mod h1:x4oUasVrzR7071A4TnHLGSPpNOm2a21K9Kf04k1rs08=
 github.com/go-oidfed/lib v0.10.13-0.20260728133522-ae8a60cea9eb h1:JLu7u5rZzpDVTzNt0TaSGmA4RsQ6xzIiWHHS+0oBsg8=
 github.com/go-oidfed/lib v0.10.13-0.20260728133522-ae8a60cea9eb/go.mod h1:r3CAR+fiyTB7nJ1dBgmMsIsC2UO+MQt9d7ipL8mpYC8=
+github.com/go-oidfed/lib v0.11.0 h1:FJJB4I4VZVLiVFZGVB4kaCRz57bVY5TTc4FTNGlGTCM=
+github.com/go-oidfed/lib v0.11.0/go.mod h1:ngQ3PzD/YOFBRFHMfamfEn2w6Xg0ng0eOXhV9kPJ3/w=
 github.com/go-resty/resty/v2 v2.17.2 h1:FQW5oHYcIlkCNrMD2lloGScxcHJ0gkjshV3qcQAyHQk=
 github.com/go-resty/resty/v2 v2.17.2/go.mod h1:kCKZ3wWmwJaNc7S29BRtUhJwy7iqmn+2mLtQrOyQlVA=
 github.com/gofiber/fiber/v2 v2.52.14 h1:Of3L+9qVFaQNwPlcmEdl5IIodHz8BSE0j37R7rWu4pE=
