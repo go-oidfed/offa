@@ -315,6 +315,9 @@ be used.
             - entity_id: https://ta.example.com
             - entity_id: https://other-ta.example.org
               jwks: {...}
+              # jwks_file: /path/to/ta.jwks        # alternative to inline jwks
+              # enable_jwks_update: true           # enables automatic polling
+              # key_poll_interval: 2h              # optional, defaults to TA's EC lifetime
     ```
 
 For each list element the following options are defined:
@@ -338,6 +341,36 @@ trusted. In that case you are trusting TLS.
     We recommend to provide the `jwks` as `json`. `json` is valid `yaml` and 
     can just be included. This way you can pass the whole `jwks` in a single 
     line.
+
+### `jwks_file`
+<span class="badge badge-purple" title="Value Type">path</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+Path to a file containing the Trust Anchor's JWKS (JSON). This is an alternative
+to providing the JWKS inline via [`jwks`](#jwks); if both are given, `jwks_file`
+takes precedence. The JWKS is loaded from the file at startup. When
+[`enable_jwks_update`](#enable_jwks_update) is `true`, updated JWKS are also
+persisted back to this file.
+
+### `enable_jwks_update`
+<span class="badge badge-purple" title="Value Type">boolean</span>
+<span class="badge badge-blue" title="Default Value">false</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+If `true`, OFFA periodically polls the Trust Anchor's Entity Configuration for
+JWKS changes and updates the stored JWKS automatically. When set,
+[`signing.key_storage`](signing.md#key_storage) must be configured, as the
+refreshed JWKS are persisted under `<key_storage>/ta-jwks/`. A
+[`jwks_file`](#jwks_file) may additionally be given to persist the JWKS to a
+custom location.
+
+### `key_poll_interval`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The interval at which the Trust Anchor's JWKS is polled when
+[`enable_jwks_update`](#enable_jwks_update) is `true`. If omitted, the Trust
+Anchor's Entity Configuration lifetime is used as the poll interval.
 
 ## `authority_hints`
 <span class="badge badge-purple" title="Value Type">list of uris / objects</span>
