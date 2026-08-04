@@ -98,20 +98,32 @@ Supported values are:
 - `ES256`
 - `ES384`
 - `ES512`
-- `EdDSA` (ed25519)
+- `ES256K` (ECDSA over the secp256k1 curve)
+- `EdDSA` (EdDSA, ed25519)
+- `Ed25519` (Ed25519)
+- `Ed448` (Ed448)
 - `RS256`
 - `RS384`
 - `RS512`
 - `PS256`
 - `PS384`
 - `PS512`
+- `ML-DSA-44` (post-quantum, NIST FIPS 204)
+- `ML-DSA-65` (post-quantum, NIST FIPS 204)
+- `ML-DSA-87` (post-quantum, NIST FIPS 204)
+- `ML-DSA-44-ES256` (composite ML-DSA-44 + ES256)
+- `ML-DSA-65-ES256` (composite ML-DSA-65 + ES256)
+- `ML-DSA-87-ES384` (composite ML-DSA-87 + ES384)
+- `ML-DSA-44-Ed25519` (composite ML-DSA-44 + Ed25519)
+- `ML-DSA-65-Ed25519` (composite ML-DSA-65 + Ed25519)
+- `ML-DSA-87-Ed448` (composite ML-DSA-87 + Ed448)
 
 ??? file "config.yaml"
 
     ```yaml
     signing:
         federation:
-            alg: EdDSA
+            alg: Ed25519
     ```
 
 
@@ -149,6 +161,8 @@ Under the `automatic_key_rollover` option key rollover / key rotation is configu
             automatic_key_rollover:
                 enabled: true
                 interval: 30d
+                overlap: 1h
+                key_announcement_lead_time: 7d
     ```
 
 #### `enabled`
@@ -178,6 +192,35 @@ This cannot be smaller than the lifetime of the Entity Configuration.
 
 The `overlap` period between the current and next key. During this window, OFFA transitions to using the new key while 
 the old key's public key is still published.
+
+#### `key_announcement_lead_time`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">`max(5 * configuration_lifetime, 24h)`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `key_announcement_lead_time` controls how far in advance a new signing key
+is published in the JWKS before it becomes the active signing key. This ensures
+clients that are temporarily unavailable (e.g., due to downtime or network
+issues) have sufficient time to fetch the new key before the old one is
+retired.
+
+If not set (or zero), the default of `max(5 * configuration_lifetime, 24h)` is
+used. If the configured value is shorter than the Entity Configuration lifetime,
+the EC lifetime is used as a minimum and a warning is logged.
+
+Takes precedence over the default, but is overridden by
+`key_announcement_lead_time_ec_multiplier` if that is also set.
+
+#### `key_announcement_lead_time_ec_multiplier`
+<span class="badge badge-purple" title="Value Type">number (float)</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+If set to a value greater than 0, the key announcement lead time is computed as
+this multiplier times the Entity Configuration lifetime. For example, `5` means
+the new key is published 5 EC lifetimes before it becomes active. This takes
+precedence over `key_announcement_lead_time`.
+
+The result is clamped to a minimum of the EC lifetime.
 
 ## `oidc`
 
@@ -215,15 +258,38 @@ Supported values are:
 - `ES256`
 - `ES384`
 - `ES512`
-- `EdDSA` (ed25519)
+- `ES256K` (ECDSA over the secp256k1 curve)
+- `EdDSA` (EdDSA, ed25519)
+- `Ed25519` (Ed25519)
+- `Ed448` (Ed448)
 - `RS256`
 - `RS384`
 - `RS512`
 - `PS256`
 - `PS384`
 - `PS512`
+- `ML-DSA-44` (post-quantum, NIST FIPS 204)
+- `ML-DSA-65` (post-quantum, NIST FIPS 204)
+- `ML-DSA-87` (post-quantum, NIST FIPS 204)
+- `ML-DSA-44-ES256` (composite ML-DSA-44 + ES256)
+- `ML-DSA-65-ES256` (composite ML-DSA-65 + ES256)
+- `ML-DSA-87-ES384` (composite ML-DSA-87 + ES384)
+- `ML-DSA-44-Ed25519` (composite ML-DSA-44 + Ed25519)
+- `ML-DSA-65-Ed25519` (composite ML-DSA-65 + Ed25519)
+- `ML-DSA-87-Ed448` (composite ML-DSA-87 + Ed448)
 
-By default, all supported algorithms are allowed.
+By default, the following algorithms are allowed:
+- `ES256`
+- `ES384`
+- `ES512`
+- `Ed25519` (Ed25519)
+- `Ed448` (Ed448)
+- `RS256`
+- `RS384`
+- `RS512`
+- `PS256`
+- `PS384`
+- `PS512`
 
 ??? file "config.yaml"
 
@@ -234,7 +300,7 @@ By default, all supported algorithms are allowed.
                 - ES512
                 - ES384
                 - ES256
-                - EdDSA
+                - Ed448
     ```
 
 ### `default_alg`
@@ -286,6 +352,8 @@ Under the `automatic_key_rollover` option key rollover / key rotation is configu
             automatic_key_rollover:
                 enabled: true
                 interval: 30d
+                overlap: 1h
+                key_announcement_lead_time: 7d
     ```
 
 #### `enabled`
@@ -315,3 +383,33 @@ This cannot be smaller than the lifetime of the Entity Configuration.
 
 The `overlap` period between the current and next key. During this window, OFFA transitions to using the new key while
 the old key's public key is still published.
+
+#### `key_announcement_lead_time`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">`max(5 * configuration_lifetime, 24h)`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `key_announcement_lead_time` controls how far in advance a new signing key
+is published in the JWKS before it becomes the active signing key. This ensures
+clients that are temporarily unavailable (e.g., due to downtime or network
+issues) have sufficient time to fetch the new key before the old one is
+retired.
+
+If not set (or zero), the default of `max(5 * configuration_lifetime, 24h)` is
+used. If the configured value is shorter than the Entity Configuration lifetime,
+the EC lifetime is used as a minimum and a warning is logged.
+
+Takes precedence over the default, but is overridden by
+`key_announcement_lead_time_ec_multiplier` if that is also set.
+
+#### `key_announcement_lead_time_ec_multiplier`
+<span class="badge badge-purple" title="Value Type">number (float)</span>
+<span class="badge badge-blue" title="Default Value">`0` (disabled)</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+If set to a value greater than 0, the key announcement lead time is computed as
+this multiplier times the Entity Configuration lifetime. For example, `5` means
+the new key is published 5 EC lifetimes before it becomes active. This takes
+precedence over `key_announcement_lead_time`.
+
+The result is clamped to a minimum of the EC lifetime.

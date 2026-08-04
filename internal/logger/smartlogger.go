@@ -1,154 +1,106 @@
 package logger
 
 import (
-	"bytes"
 	"io"
 	"path/filepath"
+	"sync"
 
 	"github.com/gofiber/fiber/v2"
-	log "github.com/sirupsen/logrus"
-	"github.com/sirupsen/logrus/hooks/writer"
-
-	"github.com/go-oidfed/offa/internal/config"
+	"github.com/rs/zerolog"
 )
 
-type smartLogger struct {
-	*log.Entry
-	rootHook *rootHook
-	ctx      smartLoggerContext
+// smartLogger is a per-request zerolog.Logger that writes to the regular
+// internal log destination (so smart entries still appear in offa.log) and,
+// additionally, buffers every entry until an error-level entry is emitted.
+//
+// When an error is logged, the buffer is flushed to a dedicated per-request
+// file (named after the request id) and all subsequent entries for that request
+// are written directly to that file. If no error occurs for the request, the
+// per-request file is never created. This reproduces the behaviour of the
+// previous logrus-based "smart logger" using zerolog's TriggerLevelWriter.
+
+// newSmartLogger builds a smart logger for the given request id. The logger
+// emits to the regular internal log destination immediately and additionally
+// buffers entries until an error triggers a flush to the per-request file.
+func newSmartLogger(id string) zerolog.Logger {
+	lazyFile := &lazyFileWriter{
+		dir: settings.Internal.Smart.Dir,
+		id:  id,
+	}
+	// The per-request file receives pretty (console) formatted output, matching
+	// the regular internal log format.
+	perRequestWriter := newConsoleWriter(lazyFile)
+
+	trigger := &zerolog.TriggerLevelWriter{
+		Writer:           perRequestWriter,
+		ConditionalLevel: zerolog.WarnLevel,  // buffer everything up to warn ...
+		TriggerLevel:     zerolog.ErrorLevel, // ... until an error is logged
+	}
+
+	// The smart logger writes to both the regular internal destination (so
+	// smart entries show up in offa.log) and the triggering per-request writer.
+	// Both destinations are wrapped in a console writer so the format matches
+	// the regular internal logger output.
+	multi := zerolog.MultiLevelWriter(newConsoleWriter(internalWriter), trigger)
+	lg := zerolog.New(multi).With().Timestamp().Logger()
+	if zerolog.GlobalLevel() <= zerolog.DebugLevel {
+		lg = lg.With().Caller().Logger()
+	}
+	lg = lg.Level(zerolog.GlobalLevel())
+	if id != "" {
+		lg = lg.With().Str("requestid", id).Logger()
+	}
+	return lg
 }
 
-type smartLoggerContext struct {
-	buffer *bytes.Buffer
-	id     string
+// GetRequestLogger returns a *zerolog.Logger scoped to the given request id.
+//
+// When smart logging is disabled (the default), the returned logger simply
+// attaches the request id to the regular internal logger. When smart logging is
+// enabled, the returned logger additionally buffers all entries for the request
+// and flushes them to a dedicated per-request file the first time an error is
+// logged for that request; if no error occurs, no per-request file is created.
+func GetRequestLogger(ctx *fiber.Ctx) *zerolog.Logger {
+	rid, _ := ctx.Locals("requestid").(string)
+	return getIDLogger(rid)
 }
 
-type rootHook struct {
-	buffer log.Hook
-	error  *errorHook
+// GetSSHRequestLogger returns a *zerolog.Logger scoped to the given SSH session
+// id, with the same smart-logging semantics as GetRequestLogger.
+func GetSSHRequestLogger(sessionID string) *zerolog.Logger {
+	return getIDLogger(sessionID)
 }
 
-func (*rootHook) Levels() []log.Level {
-	return log.AllLevels
-}
-func (h *rootHook) Fire(e *log.Entry) error {
-	if !h.error.firedBefore {
-		if err := h.buffer.Fire(e); err != nil {
-			return err
-		}
+func getIDLogger(id string) *zerolog.Logger {
+	if !settings.Internal.Smart.Enabled {
+		return new(Log.With().Str("requestid", id).Logger())
 	}
-	if h.error.firedBefore || log.ErrorLevel >= e.Level {
-		if err := h.error.Fire(e); err != nil {
-			return err
-		}
-	}
-	return nil
+	return new(newSmartLogger(id))
 }
 
-type errorHook struct {
-	*smartLoggerContext
-	firedBefore bool
-	file        io.Writer
+// lazyFileWriter opens its target file on first Write so that per-request error
+// log files are only created when an error actually occurs.
+type lazyFileWriter struct {
+	dir  string
+	id   string
+	once sync.Once
+	file io.Writer
+	err  error
 }
 
-func (*errorHook) Levels() []log.Level {
-	return log.AllLevels // we must be triggered at
-}
-func (h *errorHook) Fire(e *log.Entry) (err error) {
-	var logData []byte
-	if h.firedBefore {
-		logData, err = e.Bytes()
-		if err != nil {
-			return
-		}
-	} else {
-		logData = h.smartLoggerContext.buffer.Bytes()
-		// from now on we will log all future log messages directly to file (if there are any)
-		h.firedBefore = true
-		h.smartLoggerContext.buffer.Reset()
-	}
-	file, errr := h.getFile()
-	if errr != nil {
-		return errr
-	}
-	if _, err = file.Write(logData); err != nil {
-		return
-	}
-	return
-}
-
-func (h *errorHook) getFile() (io.Writer, error) {
-	var err error
-	if h.file == nil {
-		h.file, err = getFile(filepath.Join(config.Get().Logging.Internal.Smart.Dir, h.smartLoggerContext.id))
-	}
-	return h.file, err
-}
-func newErrorHook(ctx *smartLoggerContext) *errorHook {
-	return &errorHook{
-		smartLoggerContext: ctx,
-	}
-}
-func newBufferHook(ctx *smartLoggerContext) log.Hook {
-	return &writer.Hook{
-		Writer:    ctx.buffer,
-		LogLevels: log.AllLevels,
-	}
-}
-func newRootHook(ctx *smartLoggerContext) *rootHook {
-	return &rootHook{
-		buffer: newBufferHook(ctx),
-		error:  newErrorHook(ctx),
-	}
-}
-
-func smartPrepareLogger(rootH *rootHook) *log.Logger {
-	std := log.StandardLogger()
-	logger := &log.Logger{
-		Out:          std.Out,
-		Hooks:        make(log.LevelHooks),
-		Formatter:    std.Formatter,
-		ReportCaller: std.ReportCaller,
-		Level:        std.Level,
-		ExitFunc:     std.ExitFunc,
-	}
-	for l, hs := range std.Hooks {
-		logger.Hooks[l] = append([]log.Hook{}, hs...)
-	}
-	logger.Hooks.Add(rootH)
-	return logger
-}
-
-func getLogEntry(id string, logger *log.Logger) *log.Entry {
-	return logger.WithField("requestid", id)
-}
-
-func getIDlogger(id string) log.Ext1FieldLogger {
-	if !config.Get().Logging.Internal.Smart.Enabled {
-		return getLogEntry(id, log.StandardLogger())
-	}
-	smartLog := &smartLogger{
-		ctx: smartLoggerContext{
-			buffer: new(bytes.Buffer),
-			id:     id,
+func (w *lazyFileWriter) Write(p []byte) (int, error) {
+	w.once.Do(
+		func() {
+			f, err := getFile(filepath.Join(w.dir, w.id))
+			if err != nil {
+				w.err = err
+				return
+			}
+			w.file = f
 		},
+	)
+	if w.err != nil {
+		return 0, w.err
 	}
-	smartLog.rootHook = newRootHook(&smartLog.ctx)
-	logger := smartPrepareLogger(smartLog.rootHook)
-	smartLog.Entry = getLogEntry(id, logger)
-	return smartLog
-}
-
-// GetRequestLogger returns a logrus.Ext1FieldLogger that always includes a request's id
-func GetRequestLogger(ctx *fiber.Ctx) log.Ext1FieldLogger {
-	rid := ctx.Locals("requestid")
-	if rid != nil {
-		return getIDlogger(rid.(string))
-	}
-	return getIDlogger("")
-}
-
-// GetSSHRequestLogger returns a logrus.Ext1FieldLogger that always includes an ssh request's id
-func GetSSHRequestLogger(sessionID string) log.Ext1FieldLogger {
-	return getIDlogger(sessionID)
+	return w.file.Write(p)
 }

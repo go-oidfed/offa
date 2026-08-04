@@ -315,6 +315,9 @@ be used.
             - entity_id: https://ta.example.com
             - entity_id: https://other-ta.example.org
               jwks: {...}
+              # jwks_file: /path/to/ta.jwks        # alternative to inline jwks
+              # enable_jwks_update: true           # enables automatic polling
+              # key_poll_interval: 2h              # optional, defaults to TA's EC lifetime
     ```
 
 For each list element the following options are defined:
@@ -339,19 +342,127 @@ trusted. In that case you are trusting TLS.
     can just be included. This way you can pass the whole `jwks` in a single 
     line.
 
+### `jwks_file`
+<span class="badge badge-purple" title="Value Type">path</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+Path to a file containing the Trust Anchor's JWKS (JSON). This is an alternative
+to providing the JWKS inline via [`jwks`](#jwks); if both are given, `jwks_file`
+takes precedence. The JWKS is loaded from the file at startup. When
+[`enable_jwks_update`](#enable_jwks_update) is `true`, updated JWKS are also
+persisted back to this file.
+
+### `enable_jwks_update`
+<span class="badge badge-purple" title="Value Type">boolean</span>
+<span class="badge badge-blue" title="Default Value">false</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+If `true`, OFFA periodically polls the Trust Anchor's Entity Configuration for
+JWKS changes and updates the stored JWKS automatically. When set,
+[`signing.key_storage`](signing.md#key_storage) must be configured, as the
+refreshed JWKS are persisted under `<key_storage>/ta-jwks/`. A
+[`jwks_file`](#jwks_file) may additionally be given to persist the JWKS to a
+custom location.
+
+### `key_poll_interval`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The interval at which the Trust Anchor's JWKS is polled when
+[`enable_jwks_update`](#enable_jwks_update) is `true`. If omitted, the Trust
+Anchor's Entity Configuration lifetime is used as the poll interval.
+
 ## `authority_hints`
-<span class="badge badge-purple" title="Value Type">list of uris</span>
+<span class="badge badge-purple" title="Value Type">list of uris / objects</span>
 <span class="badge badge-red" title="If this option is required or optional">required</span>
 
 The `authority_hints` option is used to specify the Entity IDs of Federation 
 Entities that are direct superior to OFFA and that issue a statement about OFFA.
+
+Each entry may be given either as a plain string (the entity ID) or as an
+object. The object form additionally allows opting into syncing rotated
+**federation** keys to that authority hint whenever OFFA's federation signing
+keys are rotated.
+
+### Syncing rotated federation keys to authority hints
+
+When OFFA rotates its federation signing keys (i.e. when
+[`signing.federation.automatic_key_rollover.enabled`](signing.md) is `true`),
+it can notify selected authority hints so they learn about the new keys without
+waiting for them to re-fetch OFFA's Entity Configuration. This is configured
+per authority hint via the `jwks_sync` block and is independent for each hint.
+
+`jwks_sync.mode` selects one of two mechanisms:
+
+| Mode      | lib hook            | What happens                                                                                                                                                            |
+|-----------|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `none`    | —                   | No sync (default; equivalent to the plain-string form).                                                                                                                 |
+| `push`    | `JWKSUpdateHook`    | OFFA pushes a signed JWK Set (`application/jwk-set+jwt`) to the hint's `federation_jwks_update_endpoint`.                                                               |
+| `trigger` | `TriggerUpdateHook` | OFFA POSTs its entity_id (may be authenticated with `private_key_jwt`) to the <br/>hint's `federation_jwks_update_trigger_endpoint`, asking it to re-fetch OFFA's JWKS. |
+
+In both modes the target endpoint URL and the acceptable signing algorithms
+are resolved dynamically from the authority hint's Entity Configuration at the
+time of each rotation (served from OFFA's EC cache), so no URLs need to be
+hardcoded. The signed JWK Set (push) and the `private_key_jwt` assertion
+(trigger) are both signed with OFFA's federation signing key.
+
+!!! note
+
+    `jwks_sync` only applies to **federation** keys, never to OIDC signing
+    keys. It only fires when
+    `signing.federation.automatic_key_rollover.enabled` is `true`; otherwise
+    a warning is logged at startup and the sync never fires. The very first
+    key seeding (when no key file exists yet) does not trigger a sync; only
+    subsequent rotations do.
+
 ??? file "config.yaml"
 
     ```yaml
     federation:
         authority_hints:
+            # Legacy plain-string form: no sync.
             - https://ia.example.com
+            # Object form: push a signed JWKS to this hint on each rotation.
+            - entity_id: https://lh1.example.com
+              jwks_sync:
+                mode: push
+                jwt_lifetime: 10m   # lifetime of the signed JWKS JWT (default: 10m)
+                timeout: 20s        # HTTP timeout (default: 20s)
+                headers:            # optional extra HTTP headers
+                  X-Custom: value
+            # Object form: ask this hint to re-fetch OFFA's JWKS.
+            - entity_id: https://lh2.example.com
+              jwks_sync:
+                mode: trigger
     ```
+
+#### `jwks_sync.mode`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-blue" title="Default Value">none</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+One of `none`, `push`, or `trigger` (see the table above).
+
+#### `jwks_sync.jwt_lifetime`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">10 minutes</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The lifetime (`exp` - `iat`) of the signed JWK Set JWT sent in `push` mode.
+Ignored in other modes.
+
+#### `jwks_sync.timeout`
+<span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>
+<span class="badge badge-blue" title="Default Value">20 seconds</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The HTTP client timeout for the sync request.
+
+#### `jwks_sync.headers`
+<span class="badge badge-purple" title="Value Type">map of string to string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+Additional HTTP headers set on the sync request.
 
 ## `configuration_lifetime`
 <span class="badge badge-purple" title="Value Type">[duration](index.md#time-duration-configuration-options)</span>

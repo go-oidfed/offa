@@ -9,10 +9,10 @@ import (
 	"github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/jwx"
 	"github.com/gofiber/fiber/v2"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/go-oidfed/offa/internal"
 	"github.com/go-oidfed/offa/internal/config"
+	log "github.com/go-oidfed/offa/internal/logger"
 	"github.com/go-oidfed/offa/internal/version"
 )
 
@@ -113,7 +113,7 @@ func initFederationEntity() {
 	fedConfig.ExtraEntityConfigurationData["offa_version"] = version.VERSION
 	var err error
 	federationLeafEntity, err = oidfed.NewFederationLeaf(
-		fedConfig.EntityID, fedConfig.AuthorityHints, fedConfig.TrustAnchors, metadata,
+		fedConfig.EntityID, fedConfig.AuthorityHints.EntityIDs(), fedConfig.TrustAnchors, metadata,
 		jwx.NewEntityStatementSigner(
 			internal.FederationSigner(),
 		), fedConfig.ConfigurationLifetime.Duration(), internal.OIDCSigner(),
@@ -134,7 +134,7 @@ func initFederationEntity() {
 			return metadata, nil
 		},
 		AuthorityHints: func() ([]string, error) {
-			return fedConfig.AuthorityHints, nil
+			return fedConfig.AuthorityHints.EntityIDs(), nil
 		},
 		TrustAnchorHints: func() ([]string, error) { return fedConfig.TrustAnchors.EntityIDs(), nil },
 		ConfigurationLifetime: func() (time.Duration, error) {
@@ -207,8 +207,8 @@ func applyExtraFEMetadata(extraFE map[string]any) *oidfed.FederationEntityMetada
 	t := v.Type()
 
 	jsonTagToField := make(map[string]string)
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
+	for field := range t.Fields() {
+		field := field
 		jsonTag := field.Tag.Get("json")
 		if jsonTag != "" && jsonTag != "-" {
 			if idx := strings.Index(jsonTag, ","); idx != -1 {
@@ -228,7 +228,7 @@ func applyExtraFEMetadata(extraFE map[string]any) *oidfed.FederationEntityMetada
 						field.SetString(strVal)
 					}
 				case reflect.Slice:
-					if sliceVal, ok := value.([]interface{}); ok {
+					if sliceVal, ok := value.([]any); ok {
 						strSlice := make([]string, len(sliceVal))
 						for i, v := range sliceVal {
 							if str, ok := v.(string); ok {

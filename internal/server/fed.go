@@ -3,7 +3,8 @@ package server
 import (
 	"github.com/go-oidfed/lib/oidfedconst"
 	"github.com/gofiber/fiber/v2"
-	log "github.com/sirupsen/logrus"
+
+	log "github.com/go-oidfed/offa/internal/logger"
 )
 
 func addFederationEndpoints(s fiber.Router) {

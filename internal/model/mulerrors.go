@@ -1,5 +1,7 @@
 package model
 
+import "strings"
+
 // MultipleErrors is an error type that supports multiple errors
 type MultipleErrors []error
 
@@ -8,9 +10,10 @@ func (e MultipleErrors) Error() string {
 		return e[0].Error()
 	}
 
-	msg := "multiple errors:"
+	var msg strings.Builder
+	msg.WriteString("multiple errors:")
 	for _, err := range e {
-		msg += "\n" + err.Error()
+		msg.WriteString("\n" + err.Error())
 	}
-	return msg
+	return msg.String()
 }

@@ -8,10 +8,10 @@ import (
 	"github.com/go-oidfed/lib/apimodel"
 	"github.com/go-oidfed/lib/oidfedconst"
 	"github.com/gofiber/fiber/v2"
-	log "github.com/sirupsen/logrus"
 	"github.com/zachmann/go-utils/ctxutils"
 
 	"github.com/go-oidfed/offa/internal/config"
+	log "github.com/go-oidfed/offa/internal/logger"
 )
 
 type postLoginRequest struct {
@@ -46,7 +46,7 @@ func addLoginHandlers(s fiber.Router) {
 
 func showLoginPage(c *fiber.Ctx) error {
 	return render(
-		c, "login", map[string]interface{}{
+		c, "login", map[string]any{
 			"client_name": config.Get().Federation.ClientName,
 			"logo_uri":    config.Get().Federation.LogoURI,
 			"login-path":  config.Get().Server.Paths.Login,

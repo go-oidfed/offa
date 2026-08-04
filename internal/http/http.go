@@ -43,7 +43,7 @@ func Do() *resty.Client {
 }
 
 // Get performs a http GET request and parses the response into the given interface{}
-func Get(url string, params url.Values, res interface{}) (*resty.Response, *HttpError, error) {
+func Get(url string, params url.Values, res any) (*resty.Response, *HttpError, error) {
 	resp, err := client.R().SetQueryParamsFromValues(params).SetError(&HttpError{}).SetResult(res).Get(url)
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
@@ -56,7 +56,7 @@ func Get(url string, params url.Values, res interface{}) (*resty.Response, *Http
 }
 
 // Post performs a http POST request and parses the response into the given interface{}
-func Post(url string, req interface{}, res interface{}) (*resty.Response, *HttpError, error) {
+func Post(url string, req any, res any) (*resty.Response, *HttpError, error) {
 	resp, err := client.R().SetBody(req).SetError(&HttpError{}).SetResult(res).Post(url)
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
