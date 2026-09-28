@@ -6,7 +6,7 @@ require (
 	github.com/adam-hanna/arrayOperations v1.0.1
 	github.com/bradfitz/gomemcache v0.0.0-20260422231931-4d751bb6e37c
 	github.com/coreos/go-oidc/v3 v3.21.0
-	github.com/go-oidfed/lib v0.11.1
+	github.com/go-oidfed/lib v0.11.2
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/gofiber/fiber/v2 v2.52.15
 	github.com/gofiber/template/mustache/v2 v2.0.14
@@ -27,7 +27,7 @@ require (
 	github.com/cbroglie/mustache v1.4.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/cloudflare/circl v1.6.4 // indirect
+	github.com/cloudflare/circl v1.6.5 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/eclipse-keypont/crypto11 v1.6.8 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -37,10 +37,10 @@ require (
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jarcoal/httpmock v1.4.2 // indirect
-	github.com/jwx-go/compsig/v4 v4.0.4 // indirect
-	github.com/jwx-go/ed448/v4 v4.0.4 // indirect
+	github.com/jwx-go/compsig/v4 v4.0.5 // indirect
+	github.com/jwx-go/ed448/v4 v4.0.5 // indirect
 	github.com/jwx-go/es256k/v4 v4.0.4 // indirect
-	github.com/jwx-go/mldsa/v4 v4.0.4 // indirect
+	github.com/jwx-go/mldsa/v4 v4.0.5 // indirect
 	github.com/klauspost/compress v1.20.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lestrrat-go/dsig v1.4.0 // indirect
