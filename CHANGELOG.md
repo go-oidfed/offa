@@ -8,15 +8,19 @@ This is a minor release adding support for external OP discovery buttons on the 
 
 ### Dependencies / Build
 
-- `go-oidfed/lib` 0.11.1 → 0.11.2.
+- `go-oidfed/lib` 0.11.1 → 0.11.4.
 - `gofiber/fiber/v2` 2.52.14 → 2.52.15.
 - `coreos/go-oidc/v3` 3.20.0 → 3.21.0.
 - `lestrrat-go/jwx/v4` 4.2.0 → 4.5.0.
 - `valyala/fasthttp` 1.73.0 → 1.74.0.
 - `golang.org/x/oauth2` 0.36.0 → 0.37.0.
-- `golang.org/x/crypto` 0.54.0 → 0.56.0 (indirect).
+- `go-jose/go-jose/v4` 4.1.4 → 4.1.5.
+- `sirupsen/logrus` 1.9.4 → 1.10.2 (indirect).
+- `klauspost/compress` 1.19.1 → 1.20.1 (indirect).
+- `jwx-go/compsig/v4` 4.0.4 → 4.0.5, `jwx-go/ed448/v4` → 4.0.5, `jwx-go/mldsa/v4` → 4.0.5 (indirect).
+- `golang.org/x/crypto` 0.54.0 → 0.57.0, `golang.org/x/net` → 0.59.0, `golang.org/x/sys` → 0.48.0, `golang.org/x/text` → 0.42.0 (indirect).
 
-**Full Changelog**: https://github.com/go-oidfed/offa/compare/v0.5.0...v0.5.1
+**Full Changelog**: https://github.com/go-oidfed/offa/compare/v0.5.0...v0.6.0
 
 ---
 
