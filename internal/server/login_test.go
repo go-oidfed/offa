@@ -57,56 +57,62 @@ func TestBuildExternalButtons(t *testing.T) {
 		ext.Services[0].Button.Text = "Discover via Example DS"
 	}
 
-	t.Run("include_entity_id true merges params", func(t *testing.T) {
-		// Pre-existing query param on the service URL must be preserved.
-		setService(t, "https://ds.example.org/discovery?existing=1", true)
-		next := "https://rp.example.org/login?target_link_uri=abc"
+	t.Run(
+		"include_entity_id true merges params", func(t *testing.T) {
+			// Pre-existing query param on the service URL must be preserved.
+			setService(t, "https://ds.example.org/discovery?existing=1", true)
+			next := "https://rp.example.org/login?target_link_uri=abc"
 
-		buttons := buildExternalButtons(next)
-		if len(buttons) != 1 {
-			t.Fatalf("expected 1 button, got %d", len(buttons))
-		}
-		href := buttons[0].Href
-		q := urlValue(t, href)
-		if got := q.Get("existing"); got != "1" {
-			t.Fatalf("expected pre-existing query param preserved, got %q: %s", got, href)
-		}
-		if got := q.Get("target_link_uri"); got != next {
-			t.Fatalf("target_link_uri: got %q want %q", got, next)
-		}
-		if got := q.Get("entityID"); got != entityID {
-			t.Fatalf("entityID: got %q want %q", got, entityID)
-		}
-		if buttons[0].Text != "Discover via Example DS" {
-			t.Fatalf("text: got %q", buttons[0].Text)
-		}
-	})
+			buttons := buildExternalButtons(next)
+			if len(buttons) != 1 {
+				t.Fatalf("expected 1 button, got %d", len(buttons))
+			}
+			href := buttons[0].Href
+			q := urlValue(t, href)
+			if got := q.Get("existing"); got != "1" {
+				t.Fatalf("expected pre-existing query param preserved, got %q: %s", got, href)
+			}
+			if got := q.Get("target_link_uri"); got != next {
+				t.Fatalf("target_link_uri: got %q want %q", got, next)
+			}
+			if got := q.Get("entity_id"); got != entityID {
+				t.Fatalf("entity_id: got %q want %q", got, entityID)
+			}
+			if buttons[0].Text != "Discover via Example DS" {
+				t.Fatalf("text: got %q", buttons[0].Text)
+			}
+		},
+	)
 
-	t.Run("include_entity_id false omits entityID", func(t *testing.T) {
-		setService(t, "https://ds.example.org/discovery", false)
-		next := "https://rp.example.org/login"
+	t.Run(
+		"include_entity_id false omits entity_id", func(t *testing.T) {
+			setService(t, "https://ds.example.org/discovery", false)
+			next := "https://rp.example.org/login"
 
-		buttons := buildExternalButtons(next)
-		if len(buttons) != 1 {
-			t.Fatalf("expected 1 button, got %d", len(buttons))
-		}
-		href := buttons[0].Href
-		q := urlValue(t, href)
-		if got := q.Get("target_link_uri"); got != next {
-			t.Fatalf("target_link_uri: got %q want %q", got, next)
-		}
-		if q.Has("entityID") {
-			t.Fatalf("entityID must be absent, got %q in %s", q.Get("entityID"), href)
-		}
-	})
+			buttons := buildExternalButtons(next)
+			if len(buttons) != 1 {
+				t.Fatalf("expected 1 button, got %d", len(buttons))
+			}
+			href := buttons[0].Href
+			q := urlValue(t, href)
+			if got := q.Get("target_link_uri"); got != next {
+				t.Fatalf("target_link_uri: got %q want %q", got, next)
+			}
+			if q.Has("entity_id") {
+				t.Fatalf("entity_id must be absent, got %q in %s", q.Get("entity_id"), href)
+			}
+		},
+	)
 
-	t.Run("disabled external renders no buttons", func(t *testing.T) {
-		config.Get().OPDiscovery.External.Enabled = false
-		if buttons := buildExternalButtons("next"); len(buttons) != 0 {
-			t.Fatalf("expected no buttons when disabled, got %d", len(buttons))
-		}
-		config.Get().OPDiscovery.External.Enabled = true
-	})
+	t.Run(
+		"disabled external renders no buttons", func(t *testing.T) {
+			config.Get().OPDiscovery.External.Enabled = false
+			if buttons := buildExternalButtons("next"); len(buttons) != 0 {
+				t.Fatalf("expected no buttons when disabled, got %d", len(buttons))
+			}
+			config.Get().OPDiscovery.External.Enabled = true
+		},
+	)
 }
 
 // urlValue returns the query-values map of href's raw query string.
