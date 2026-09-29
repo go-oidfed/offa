@@ -1,3 +1,25 @@
+## OFFA 0.6.0
+
+This is a minor release adding support for external OP discovery buttons on the login page, along with dependency updates.
+
+### New Features
+
+- **External OP discovery buttons.** The login page can now render one or more buttons that link to external OP discovery services. Configured under `op_discovery.external` (`enabled` + `services`), each service becomes an anchor-button linking to its `url`, always carrying OFFA's `target_link_uri` query parameter and optionally an `entity_id` (when `include_entity_id` is enabled). Button appearance is controlled per service via `button.text`, `button.html_class`, and `button.custom_css`.
+
+### Dependencies / Build
+
+- `go-oidfed/lib` 0.11.1 → 0.11.2.
+- `gofiber/fiber/v2` 2.52.14 → 2.52.15.
+- `coreos/go-oidc/v3` 3.20.0 → 3.21.0.
+- `lestrrat-go/jwx/v4` 4.2.0 → 4.5.0.
+- `valyala/fasthttp` 1.73.0 → 1.74.0.
+- `golang.org/x/oauth2` 0.36.0 → 0.37.0.
+- `golang.org/x/crypto` 0.54.0 → 0.56.0 (indirect).
+
+**Full Changelog**: https://github.com/go-oidfed/offa/compare/v0.5.0...v0.5.1
+
+---
+
 ## OFFA 0.5.0
 
 This is a major release. Federation signing keys can now be synced to authority hints on rotation, trust-anchor JWKS can be auto-refreshed, and the logging stack has migrated from logrus to zerolog. Post-quantum and composite signing algorithms, configurable key announcement lead times, and automatic key rotation round out the headline changes.
