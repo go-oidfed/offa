@@ -82,6 +82,86 @@ Enables rendering of the thiss.js discovery component on the login page.
 
 Base URL of the thiss.js deployment.
 
+## `external`
+<span class="badge badge-purple" title="Value Type">object</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+Renders one or more buttons on the login page that link to external OP discovery
+services. Each enabled service becomes an anchor-button; clicking it sends the
+user to the service so it can identify OFFA and know where to return the user.
+
+??? file "config.yaml"
+
+    ```yaml
+    op_discovery:
+      external:
+        enabled: true
+        services:
+          - url: https://ds.example.org/discovery
+            include_entity_id: true
+            button:
+              text: Discover via Example DS
+              html_class: btn
+              custom_css: ""
+    ```
+
+### `enabled`
+<span class="badge badge-purple" title="Value Type">boolean</span>
+<span class="badge badge-blue" title="Default Value">`false`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+Enables rendering of the external OP discovery buttons on the login page.
+
+### `services`
+<span class="badge badge-purple" title="Value Type">list</span>
+<span class="badge badge-red" title="If this option is required or optional">required when `enabled`</span>
+
+A list of external discovery services to render as buttons.
+
+The button links to `url` and appends a `target_link_uri` query parameter
+(always) carrying OFFA's target link URI, and an `entity_id` query parameter
+(only when `include_entity_id` is enabled).
+
+#### `url`
+<span class="badge badge-purple" title="Value Type">uri</span>
+<span class="badge badge-red" title="If this option is required or optional">required when `enabled`</span>
+
+Base URL of the external discovery service. The button links to this URL.
+
+#### `include_entity_id`
+<span class="badge badge-purple" title="Value Type">boolean</span>
+<span class="badge badge-blue" title="Default Value">`false`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+When enabled, OFFA appends an `entity_id` query parameter carrying its entity
+identifier so the discovery service can identify the relying party.
+
+#### `button`
+<span class="badge badge-purple" title="Value Type">object</span>
+<span class="badge badge-red" title="If this option is required or optional">required</span>
+
+Controls how the button is rendered.
+
+##### `text`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-red" title="If this option is required or optional">required when `enabled`</span>
+
+The button label.
+
+##### `html_class`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+Extra CSS class(es) appended to the button element, in addition to the standard
+`btn` class.
+
+##### `custom_css`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+CSS inlined directly onto the button element via its `style` attribute.
+
+
 ## Using both methods
 
 You can enable both `local` and `thiss.js`. The login page will show the local OP selector and, in addition, the thiss.js widget as an alternative discovery path.

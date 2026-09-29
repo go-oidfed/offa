@@ -60,6 +60,20 @@
 </script>
 {{/conf.ThissJS.Enabled}}
 
+{{#external-buttons}}
+{{#conf.Local.Enabled}}
+    <h4>Or</h4>
+{{/conf.Local.Enabled}}
+{{^conf.Local.Enabled}}
+    {{#conf.ThissJS.Enabled}}<h4>Or</h4>{{/conf.ThissJS.Enabled}}
+{{/conf.Local.Enabled}}
+<div class="mt-2">
+    {{#external-buttons}}
+    <a href="{{Href}}" class="button {{HTMLClass}}" style="{{CustomCSS}}">{{Text}}</a>
+    {{/external-buttons}}
+</div>
+{{/external-buttons}}
+
 </body>
 <script src="{{basepath}}/static/js/login.js"></script>
 </html>

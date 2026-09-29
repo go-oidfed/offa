@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net/url"
 	"strings"
 	"time"
 
@@ -44,19 +45,59 @@ func addLoginHandlers(s fiber.Router) {
 	s.Get("/redirect", codeExchange)
 }
 
+type externalButton struct {
+	Href      string
+	Text      string
+	HTMLClass string
+	CustomCSS string
+}
+
 func showLoginPage(c *fiber.Ctx) error {
+	next := c.Query("next", config.Get().Federation.EntityID)
 	return render(
 		c, "login", map[string]any{
-			"client_name": config.Get().Federation.ClientName,
-			"logo_uri":    config.Get().Federation.LogoURI,
-			"login-path":  config.Get().Server.Paths.Login,
-			"login-url":   fullLoginPath,
-			"entity-id":   config.Get().Federation.EntityID,
-			"ops":         opOptions,
-			"next":        c.Query("next", config.Get().Federation.EntityID),
-			"conf":        config.Get().OPDiscovery,
+			"client_name":      config.Get().Federation.ClientName,
+			"logo_uri":         config.Get().Federation.LogoURI,
+			"login-path":       config.Get().Server.Paths.Login,
+			"login-url":        fullLoginPath,
+			"entity-id":        config.Get().Federation.EntityID,
+			"ops":              opOptions,
+			"next":             next,
+			"external-buttons": buildExternalButtons(next),
+			"conf":             config.Get().OPDiscovery,
 		},
 	)
+}
+
+func buildExternalButtons(next string) []externalButton {
+	ext := config.Get().OPDiscovery.External
+	if !ext.Enabled {
+		return nil
+	}
+	entityID := config.Get().Federation.EntityID
+	buttons := make([]externalButton, 0, len(ext.Services))
+	for _, svc := range ext.Services {
+		u, err := url.Parse(svc.URL)
+		if err != nil {
+			log.WithError(err).Error("skipping external discovery service with unparseable url")
+			continue
+		}
+		q := u.Query()
+		q.Set("target_link_uri", next)
+		if svc.IncludeEntityID {
+			q.Set("entity_id", entityID)
+		}
+		u.RawQuery = q.Encode()
+		buttons = append(
+			buttons, externalButton{
+				Href:      u.String(),
+				Text:      svc.Button.Text,
+				HTMLClass: svc.Button.HTMLClass,
+				CustomCSS: svc.Button.CustomCSS,
+			},
+		)
+	}
+	return buttons
 }
 
 type opOption struct {

@@ -39,8 +39,9 @@ type Config struct {
 }
 
 type opDiscoveryConf struct {
-	Local   localOPDiscoveryConf `yaml:"local"`
-	ThissJS thissJSDiscoveryConf `yaml:"thiss.js"`
+	Local    localOPDiscoveryConf    `yaml:"local"`
+	ThissJS  thissJSDiscoveryConf    `yaml:"thiss.js"`
+	External externalOPDiscoveryConf `yaml:"external"`
 }
 
 type thissJSDiscoveryConf struct {
@@ -51,6 +52,38 @@ type localOPDiscoveryConf struct {
 	Enabled                     bool                    `yaml:"enabled"`
 	UseEntityCollectionEndpoint bool                    `yaml:"use_entity_collection_endpoint"`
 	EntityCollectionInterval    duration.DurationOption `yaml:"entity_collection_interval"`
+}
+
+type externalOPDiscoveryConf struct {
+	Enabled  bool                           `yaml:"enabled"`
+	Services []externalDiscoveryServiceConf `yaml:"services"`
+}
+
+type externalDiscoveryServiceConf struct {
+	URL             string  `yaml:"url"`
+	IncludeEntityID bool    `yaml:"include_entity_id"`
+	Button          btnConf `yaml:"button"`
+}
+
+type btnConf struct {
+	Text      string `yaml:"text"`
+	HTMLClass string `yaml:"html_class"`
+	CustomCSS string `yaml:"custom_css"`
+}
+
+func (c externalOPDiscoveryConf) validate() error {
+	if !c.Enabled {
+		return nil
+	}
+	for i, svc := range c.Services {
+		if svc.URL == "" {
+			return errors.Errorf("op_discovery.external.services[%d].url is required when op_discovery.external.enabled is true", i)
+		}
+		if svc.Button.Text == "" {
+			return errors.Errorf("op_discovery.external.services[%d].button.text is required when op_discovery.external.enabled is true", i)
+		}
+	}
+	return nil
 }
 
 type signingConf struct {
@@ -305,6 +338,10 @@ func validate() error {
 	if err := conf.Federation.AuthorityHints.validate(); err != nil {
 		return err
 	}
+	if err := conf.OPDiscovery.External.validate(); err != nil {
+		return err
+	}
+
 	if conf.Federation.AuthorityHints.HasSyncMode() && !conf.Signing.Federation.KeyRotation.Enabled {
 		log.Warn(
 			"authority_hints: jwks_sync is configured but signing.federation.automatic_key_rollover.enabled is false; " +
