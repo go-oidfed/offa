@@ -597,23 +597,100 @@ will refresh it by requesting a new Trust Mark JWT from the Trust Mark Issuer.
 This allows OFFA to proactively request Trust Mark JWTs that are expiring 
 soon in the background.
 
-## `use_resolve_endpoint`
-<span class="badge badge-purple" title="Value Type">boolean</span>
-<span class="badge badge-blue" title="Default Value">`false`</span>
+## `external_resolver`
+<span class="badge badge-purple" title="Value Type">object</span>
+<span class="badge badge-blue" title="Default Value">`{enabled: false}`</span>
 <span class="badge badge-green" title="If this option is required or optional">optional</span>
 
-The `use_resolve_endpoint` option indicates if OFFA uses an external 
-resolver (from the federation) to resolve Trust Chains or does the resolving 
-by its own.
+The `external_resolver` option configures how OFFA uses an external federation
+resolve endpoint to resolve Trust Chains instead of doing the resolving itself.
 It is generally more performant to rely on an external resolver.
 
 ??? file "config.yaml"
 
     ```yaml
     federation:
-        use_resolve_endpoint: true
+        external_resolver:
+          enabled: true
+          strategy: strict
+          endpoints:
+            - url: https://resolver.example.com/federation_resolve
+              client_auth:
+                enabled: true
     ```
 
+### `enabled`
+<span class="badge badge-purple" title="Value Type">boolean</span>
+<span class="badge badge-blue" title="Default Value">`false`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `enabled` option activates external resolving.
+
+### `strategy`
+<span class="badge badge-purple" title="Value Type">string</span>
+<span class="badge badge-blue" title="Default Value">`smart`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `strategy` option selects the fallback strategy used when no configured
+endpoint succeeds. It can be one of:
+
+- `smart`: falls back to per-trust-anchor resolve endpoints (auto-discovered
+  from each trust anchor's Entity Configuration) and finally to local
+  resolving.
+- `strict`: propagates the last error without any fallback.
+
+### `endpoints`
+<span class="badge badge-purple" title="Value Type">list</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `endpoints` option lists explicit resolve endpoint URLs, tried in the
+configured order.
+
+When `endpoints` is empty, OFFA auto-discovers the resolve endpoints from its
+trust anchors' Entity Configurations and uses `private_key_jwt` authentication
+when they advertise it in `federation_resolve_endpoint_auth_methods`.
+
+For each list element the following options are defined:
+
+#### `url`
+<span class="badge badge-purple" title="Value Type">uri</span>
+<span class="badge badge-red" title="If this option is required or optional">required</span>
+
+The resolve endpoint URL.
+
+#### `client_auth`
+<span class="badge badge-purple" title="Value Type">object</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `client_auth` option configures `private_key_jwt` client authentication for
+this endpoint.
+
+##### `enabled`
+<span class="badge badge-purple" title="Value Type">boolean</span>
+<span class="badge badge-blue" title="Default Value">`false`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+When `true`, requests to this endpoint are authenticated with a
+`private_key_jwt` client assertion (signed with OFFA's federation signing key,
+audience = the endpoint URL) and sent as a form-encoded POST containing the
+resolve parameters plus `client_assertion_type` and `client_assertion`. When
+`false`, an unauthenticated GET is used.
+
+## `use_resolve_endpoint`
+<span class="badge badge-red">deprecated</span>
+
+The `use_resolve_endpoint` option is deprecated.
+Use [`external_resolver.enabled`](#external_resolver) instead.
+`use_resolve_endpoint: true` is equivalent to:
+
+```yaml
+federation:
+    external_resolver:
+      enabled: true
+```
+
+If both options are present, the `external_resolver` object's `enabled` value
+takes precedence.
 
 ## `use_entity_collection_endpoint`
 <span class="badge badge-red">deprecated</span>

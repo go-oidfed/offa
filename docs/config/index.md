@@ -47,7 +47,8 @@ The following is a small example config file:
             - https://ta.example.com
           logo_uri: https://offa.example.com/static/img/offa-text.svg
           key_storage: /data
-          use_resolve_endpoint: true
+          external_resolver:
+            enabled: true
           use_entity_collection_endpoint: true
     ```
 

@@ -118,7 +118,8 @@ type federationConf struct {
 	KeyStorage                                   string                                       `yaml:"key_storage"`
 	ClientRegistrationTypes                      []string                                     `yaml:"client_registration_types"`
 	TrustMarks                                   []*oidfed.EntityConfigurationTrustMarkConfig `yaml:"trust_marks"`
-	UseResolveEndpoint                           bool                                         `yaml:"use_resolve_endpoint"`
+	UseResolveEndpoint                           bool                                         `yaml:"use_resolve_endpoint"` // legacy; deprecated
+	ExternalResolver                             externalResolverConf                         `yaml:"external_resolver"`    // new
 	UseEntityCollectionEndpoint                  bool                                         `yaml:"use_entity_collection_endpoint"`
 	EntityCollectionInterval                     duration.DurationOption                      `yaml:"entity_collection_interval"`
 	RequiredOPTrustMarks                         []string                                     `yaml:"required_op_trust_marks"`
@@ -338,6 +339,9 @@ func validate() error {
 	if err := conf.Federation.AuthorityHints.validate(); err != nil {
 		return err
 	}
+	if err := conf.Federation.ExternalResolver.validate(); err != nil {
+		return err
+	}
 	if err := conf.OPDiscovery.External.validate(); err != nil {
 		return err
 	}
@@ -481,6 +485,13 @@ func MustLoadConfig() {
 	}
 	if conf.Signing.OIDC.KeyRotation.Interval < conf.Federation.ConfigurationLifetime {
 		conf.Signing.OIDC.KeyRotation.Interval = conf.Federation.ConfigurationLifetime
+	}
+	if !conf.Federation.ExternalResolver.present && conf.Federation.UseResolveEndpoint {
+		log.Warn("federation.use_resolve_endpoint is deprecated; use federation.external_resolver.enabled instead")
+		conf.Federation.ExternalResolver.Enabled = true
+	}
+	if conf.Federation.ExternalResolver.Strategy == "" {
+		conf.Federation.ExternalResolver.Strategy = ExternalResolverStrategySmart
 	}
 	if conf.Federation.UseEntityCollectionEndpoint {
 		log.Warn("federation.use_entity_collection_endpoint is deprecated; use op_discovery.local.use_resolve_endpoint instead")

@@ -5,7 +5,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/jwx"
 
 	"github.com/go-oidfed/offa/internal"
@@ -29,9 +28,7 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	if config.Get().Federation.UseResolveEndpoint {
-		oidfed.DefaultMetadataResolver = oidfed.SmartRemoteMetadataResolver{}
-	}
+	internal.SetupMetadataResolver()
 	server.Init()
 	if err := server.StartTAJWKSRefresher(); err != nil {
 		log.WithError(err).Fatal("could not start TA JWKS Refresher")
@@ -74,9 +71,7 @@ func handleSignals() {
 func reload() {
 	log.Info("Reloading config")
 	config.MustLoadConfig()
-	if config.Get().Federation.UseResolveEndpoint {
-		oidfed.DefaultMetadataResolver = oidfed.SmartRemoteMetadataResolver{}
-	}
+	internal.SetupMetadataResolver()
 	log.SetOutput(loggerSettings())
 	log.MustUpdateAccessLogger()
 	server.RestartTAJWKSRefresher()
