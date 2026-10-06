@@ -40,6 +40,8 @@ github.com/go-oidfed/lib v0.11.5-0.20261005123946-7edd6f9972f1 h1:bp0GL+YKkn225O
 github.com/go-oidfed/lib v0.11.5-0.20261005123946-7edd6f9972f1/go.mod h1:UGYBUvZtLO5zAqMd7opLzegYtYwkvd7KBPCaRXNgewg=
 github.com/go-oidfed/lib v0.11.5-0.20261006092701-7b66d95885db h1:ENq2YnIuED8NiFchFsSvrQB/2S88DWdD3V2TkJBBeEI=
 github.com/go-oidfed/lib v0.11.5-0.20261006092701-7b66d95885db/go.mod h1:3rDMbIA6RXuLQc7ih8w+xKa8bYIkTBIiYCRADSNDtqE=
+github.com/go-oidfed/lib v0.12.0 h1:QpHxAxCEQlEVmWIBGA6qdfDa8GWJaZqhSoAORNh6QEk=
+github.com/go-oidfed/lib v0.12.0/go.mod h1:3rDMbIA6RXuLQc7ih8w+xKa8bYIkTBIiYCRADSNDtqE=
 github.com/go-resty/resty/v2 v2.17.2 h1:FQW5oHYcIlkCNrMD2lloGScxcHJ0gkjshV3qcQAyHQk=
 github.com/go-resty/resty/v2 v2.17.2/go.mod h1:kCKZ3wWmwJaNc7S29BRtUhJwy7iqmn+2mLtQrOyQlVA=
 github.com/gofiber/fiber/v2 v2.52.15 h1:Cov1uKeVPyu9q0jSrN60W+A8XNX+/WK8J7cy5osHLIk=
