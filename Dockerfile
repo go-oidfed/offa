@@ -5,8 +5,6 @@ WORKDIR /app
 COPY ./ ./
 RUN go mod download
 
-ENV GOEXPERIMENT=jsonv2
-
 RUN go build -o /offa github.com/go-oidfed/offa
 
 FROM debian:stable

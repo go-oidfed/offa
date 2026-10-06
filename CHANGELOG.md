@@ -6,19 +6,23 @@ This is a minor release adding support for external OP discovery buttons on the 
 
 - **External OP discovery buttons.** The login page can now render one or more buttons that link to external OP discovery services. Configured under `op_discovery.external` (`enabled` + `services`), each service becomes an anchor-button linking to its `url`, always carrying OFFA's `target_link_uri` query parameter and optionally an `entity_id` (when `include_entity_id` is enabled). Button appearance is controlled per service via `button.text`, `button.html_class`, and `button.custom_css`.
 - **External resolve endpoints with per-endpoint client auth.** The new `federation.external_resolver` configuration object replaces the legacy `federation.use_resolve_endpoint` boolean (which keeps working and is normalized into `external_resolver.enabled: true`). It supports `enabled`, `strategy` (`smart` = fall back to per-trust-anchor resolving and local resolving, default; `strict` = no fallback), and an optional ordered `endpoints` list with `url` and `client_auth.enabled` per entry. With `client_auth.enabled: true`, requests to that endpoint are authenticated with a `private_key_jwt` client assertion (signed with OFFA's federation signing key, audience = endpoint URL) sent as a form-encoded POST. Without explicit endpoints, resolve endpoints are auto-discovered from the trust anchors' Entity Configurations, authenticating with `private_key_jwt` exactly against anchors that advertise it in `federation_resolve_endpoint_auth_methods`. Fetch/list/trust-mark requests also honor the corresponding `*_auth_methods` advertisement (requires `go-oidfed/lib` 0.12.0).
+- **ML-DSA private keys migrated to RFC 9935 encoding.** At startup, any **active** ML-DSA private key files still in the legacy PEM encoding (OCTET-STRING-wrapped seed) are re-encoded to the interoperable RFC 9935 seed-only format. Only keys listed as active in the public key storage are touched; retired or rotated legacy keys are left untouched until they become active.
 
 ### Dependencies / Build
 
-- `go-oidfed/lib` 0.11.1 → 0.11.4.
+- Go **1.27**.
+- `go-oidfed/lib` 0.11.1 → **0.12.0**.
 - `gofiber/fiber/v2` 2.52.14 → 2.52.15.
 - `coreos/go-oidc/v3` 3.20.0 → 3.21.0.
 - `lestrrat-go/jwx/v4` 4.2.0 → 4.5.0.
-- `valyala/fasthttp` 1.73.0 → 1.74.0.
+- `valyala/fasthttp` 1.73.0 → 1.75.0.
 - `golang.org/x/oauth2` 0.36.0 → 0.37.0.
+- `redis/go-redis/v9` 9.22.0 → 9.23.0.
 - `go-jose/go-jose/v4` 4.1.4 → 4.1.5.
 - `sirupsen/logrus` 1.9.4 → 1.10.2 (indirect).
 - `klauspost/compress` 1.19.1 → 1.20.1 (indirect).
-- `jwx-go/compsig/v4` 4.0.4 → 4.0.5, `jwx-go/ed448/v4` → 4.0.5, `jwx-go/mldsa/v4` → 4.0.5 (indirect).
+- `jwx-go/compsig/v4` 4.0.4 → 4.0.6, `jwx-go/ed448/v4` → 4.0.5, `jwx-go/mldsa/v4` → 4.0.6 (indirect).
+- `filippo.io/mldsa` → **1.0.0**, `cloudflare/circl` 1.6.4 → 1.6.5, `molecule-man/go-brrr` 1.2.0 (new, indirect).
 - `golang.org/x/crypto` 0.54.0 → 0.57.0, `golang.org/x/net` → 0.59.0, `golang.org/x/sys` → 0.48.0, `golang.org/x/text` → 0.42.0 (indirect).
 
 **Full Changelog**: https://github.com/go-oidfed/offa/compare/v0.5.0...v0.6.0

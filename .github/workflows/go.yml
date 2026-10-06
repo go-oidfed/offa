@@ -23,10 +23,6 @@ jobs:
 
     - name: Build
       run: go build -v ./...
-      env:
-        GOEXPERIMENT: jsonv2
 
     - name: Test
       run: go test -v ./...
-      env:
-        GOEXPERIMENT: jsonv2
