@@ -1,18 +1,18 @@
 module github.com/go-oidfed/offa
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/adam-hanna/arrayOperations v1.0.1
 	github.com/bradfitz/gomemcache v0.0.0-20260422231931-4d751bb6e37c
 	github.com/coreos/go-oidc/v3 v3.21.0
-	github.com/go-oidfed/lib v0.11.5-0.20261005123946-7edd6f9972f1
+	github.com/go-oidfed/lib v0.11.5-0.20261006092701-7b66d95885db
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/gofiber/fiber/v2 v2.52.15
 	github.com/gofiber/template/mustache/v2 v2.0.14
 	github.com/lestrrat-go/jwx/v4 v4.5.0
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.22.0
+	github.com/redis/go-redis/v9 v9.23.0
 	github.com/rs/zerolog v1.35.1
 	github.com/valyala/fasthttp v1.75.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
@@ -48,7 +48,7 @@ require (
 	github.com/lestrrat-go/dsig-secp256k1 v1.0.0 // indirect
 	github.com/lestrrat-go/option/v3 v3.0.0-alpha1 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
-	github.com/mattn/go-colorable v0.1.15 // indirect
+	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-runewidth v0.0.30 // indirect
 	github.com/miekg/pkcs11 v1.1.2 // indirect

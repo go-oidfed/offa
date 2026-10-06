@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -95,6 +96,59 @@ func migrateLegacyKeys(storagePath string) {
 	}
 }
 
+// migrateMLDSAKeys re-encodes any active ML-DSA private key files that are
+// still in the legacy PEM encoding (OCTET-STRING-wrapped seed) to the current
+// interoperable RFC 9935 seed-only encoding. Only the {kid}.pem files listed as
+// active in the public key storage are touched; retired or rotated legacy keys
+// are left untouched until they become active.
+func migrateMLDSAKeys(storagePath string) {
+	for _, typeID := range []string{
+		"oidc",
+		"federation",
+	} {
+		pks := &public.FilesystemPublicKeyStorage{
+			Dir:    storagePath,
+			TypeID: typeID,
+		}
+		if err := pks.Load(); err != nil {
+			log.Fatalf("Failed to load public key storage %s for mldsa migration: %v", typeID, err)
+		}
+		active, err := pks.GetActive()
+		if err != nil {
+			log.Fatalf("Failed to list active public keys %s for mldsa migration: %v", typeID, err)
+		}
+		for _, pk := range active {
+			algRaw, _ := pk.Key.Algorithm()
+			alg, ok := algRaw.(jwa.SignatureAlgorithm)
+			if !ok {
+				continue
+			}
+			switch alg {
+			case jwa.MLDSA44(), jwa.MLDSA65(), jwa.MLDSA87():
+			default:
+				continue
+			}
+
+			path := filepath.Join(storagePath, pk.KID+".pem")
+			data, err := os.ReadFile(path)
+			if err != nil {
+				log.Fatalf("Failed to read mldsa key %s for migration: %v", path, err)
+			}
+			converted, err := jwx.ConvertMLDSAPEM(data)
+			if err != nil {
+				log.Fatalf("Failed to migrate mldsa key %s: %v", path, err)
+			}
+			if bytes.Equal(converted, data) {
+				continue // already in the interoperable format
+			}
+			if err := os.WriteFile(path, converted, 0o600); err != nil {
+				log.Fatalf("Failed to write migrated mldsa key %s: %v", path, err)
+			}
+			log.Printf("Migrated legacy mldsa key %s to RFC 9935 seed-only encoding", path)
+		}
+	}
+}
+
 func createVersatileSigner(storagePath, typeID, entityID string, c config.KeyStorageConf) (jwx.VersatileSigner, kms.KeyManagementSystem) {
 	algs := make([]jwa.SignatureAlgorithm, 0, len(c.Algs))
 	for _, a := range c.Algs {
@@ -185,6 +239,10 @@ func InitKeys() {
 
 	// Migrate legacy keys if present
 	migrateLegacyKeys(signingConf.KeyStorage)
+
+	// Re-encode legacy ML-DSA keys to the interoperable format before the KMS
+	// loads them, so active keys are migrated automatically at startup.
+	migrateMLDSAKeys(signingConf.KeyStorage)
 
 	ecLifetimeFunc := func() (time.Duration, error) {
 		return conf.Federation.ConfigurationLifetime.Duration(), nil
