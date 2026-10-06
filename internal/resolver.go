@@ -51,7 +51,7 @@ func SetupMetadataResolver() {
 		return
 	}
 
-	endpoints := make([]oidfed.SimpleRemoteMetadataResolver, 0, len(conf.Federation.ExternalResolver.Endpoints))
+	endpoints := make([]oidfed.SimpleRemoteMetadataResolver, len(conf.Federation.ExternalResolver.Endpoints))
 	for i, e := range conf.Federation.ExternalResolver.Endpoints {
 		var epProducer *oidfed.RequestObjectProducer
 		if e.ClientAuth.Enabled {
