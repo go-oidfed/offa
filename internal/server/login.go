@@ -3,6 +3,7 @@ package server
 import (
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-oidfed/lib"
@@ -61,7 +62,7 @@ func showLoginPage(c *fiber.Ctx) error {
 			"login-path":       config.Get().Server.Paths.Login,
 			"login-url":        fullLoginPath,
 			"entity-id":        config.Get().Federation.EntityID,
-			"ops":              opOptions,
+			"ops":              getOPOptions(),
 			"next":             next,
 			"external-buttons": buildExternalButtons(next),
 			"conf":             config.Get().OPDiscovery,
@@ -107,7 +108,10 @@ type opOption struct {
 	LogoURI     string
 }
 
-var opOptions []opOption
+var (
+	opOptions   []opOption
+	opOptionsMu sync.RWMutex
+)
 
 func scheduleBuildOPOptions() {
 	conf := config.Get().OPDiscovery.Local
@@ -116,7 +120,12 @@ func scheduleBuildOPOptions() {
 	}
 	ticker := time.NewTicker(conf.EntityCollectionInterval.Duration())
 
-	buildOPOptions()
+	// Collect entity options in the background instead of synchronously: an
+	// unreachable or slow trust anchor would otherwise block server startup.
+	// The first run starts immediately (concurrently with the HTTP server
+	// bind) rather than waiting for the first ticker tick, so the login page
+	// gets populated as soon as the data is available.
+	go buildOPOptions()
 
 	go func() {
 		for range ticker.C {
@@ -176,7 +185,18 @@ func buildOPOptions() {
 			},
 		)
 	}
+	opOptionsMu.Lock()
 	opOptions = options
+	opOptionsMu.Unlock()
+}
+
+// getOPOptions returns a snapshot of the currently collected OP options. It is
+// used by request handlers; collection runs in the background, so the slice
+// must be read under the lock to avoid a data race with buildOPOptions.
+func getOPOptions() []opOption {
+	opOptionsMu.RLock()
+	defer opOptionsMu.RUnlock()
+	return opOptions
 }
 
 func getDisplayNameFromEntityInfo(entity *oidfed.CollectedEntity) string {

@@ -1,3 +1,8 @@
+## OFFA 0.6.1
+
+### Enhancements
+- **Faster startup with unreachable trust anchors.** OP discovery collection (`op_discovery.local`) previously ran synchronously at startup, so an unreachable or slow trust anchor delayed HTTP server start by the connection timeout for each anchor. Collection now runs in the background: the server binds immediately and the login page is populated as soon as the data arrives. The OP options slice is now guarded by a mutex for safe read/write from the background collector.
+
 ## OFFA 0.6.0
 
 This is a minor release adding support for external OP discovery buttons on the login page, along with dependency updates.
