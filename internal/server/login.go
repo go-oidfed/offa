@@ -203,14 +203,14 @@ func getDisplayNameFromEntityInfo(entity *oidfed.CollectedEntity) string {
 	if entity == nil {
 		return ""
 	}
-	if entity.UIInfos == nil {
+	if entity.EntityInfos == nil {
 		return entity.EntityID
 	}
-	op, ok := entity.UIInfos[oidfedconst.EntityTypeOpenIDProvider]
+	op, ok := entity.EntityInfos[oidfedconst.EntityTypeOpenIDProvider]
 	if ok && op.DisplayName != "" {
 		return op.DisplayName
 	}
-	fed, ok := entity.UIInfos[oidfedconst.EntityTypeFederationEntity]
+	fed, ok := entity.EntityInfos[oidfedconst.EntityTypeFederationEntity]
 	if ok && fed.DisplayName != "" {
 		return fed.DisplayName
 	}
@@ -218,14 +218,14 @@ func getDisplayNameFromEntityInfo(entity *oidfed.CollectedEntity) string {
 }
 
 func getKeywordsFromEntityInfo(entity *oidfed.CollectedEntity) []string {
-	if entity == nil || entity.UIInfos == nil {
+	if entity == nil || entity.EntityInfos == nil {
 		return nil
 	}
-	op, ok := entity.UIInfos[oidfedconst.EntityTypeOpenIDProvider]
+	op, ok := entity.EntityInfos[oidfedconst.EntityTypeOpenIDProvider]
 	if ok && op.Keywords != nil {
 		return op.Keywords
 	}
-	fed, ok := entity.UIInfos[oidfedconst.EntityTypeFederationEntity]
+	fed, ok := entity.EntityInfos[oidfedconst.EntityTypeFederationEntity]
 	if ok && fed.Keywords != nil {
 		return fed.Keywords
 	}
@@ -233,14 +233,14 @@ func getKeywordsFromEntityInfo(entity *oidfed.CollectedEntity) []string {
 }
 
 func getLogoURIFromEntityInfo(entity *oidfed.CollectedEntity) string {
-	if entity == nil || entity.UIInfos == nil {
+	if entity == nil || entity.EntityInfos == nil {
 		return ""
 	}
-	op, ok := entity.UIInfos[oidfedconst.EntityTypeOpenIDProvider]
+	op, ok := entity.EntityInfos[oidfedconst.EntityTypeOpenIDProvider]
 	if ok && op.LogoURI != "" {
 		return op.LogoURI
 	}
-	fed, ok := entity.UIInfos[oidfedconst.EntityTypeFederationEntity]
+	fed, ok := entity.EntityInfos[oidfedconst.EntityTypeFederationEntity]
 	if ok && fed.LogoURI != "" {
 		return fed.LogoURI
 	}

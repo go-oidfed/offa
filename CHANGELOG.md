@@ -1,7 +1,15 @@
 ## OFFA 0.6.1
 
+### Important
+**This release can use external entity collection endpoints that comply with 
+draft 01. This means LightHouse version >= 0.23.0 With older versions of 
+LightHouse the entity collection endpoint cannot be used.
+
 ### Enhancements
 - **Faster startup with unreachable trust anchors.** OP discovery collection (`op_discovery.local`) previously ran synchronously at startup, so an unreachable or slow trust anchor delayed HTTP server start by the connection timeout for each anchor. Collection now runs in the background: the server binds immediately and the login page is populated as soon as the data arrives. The OP options slice is now guarded by a mutex for safe read/write from the background collector.
+
+### Dependencies
+- Upgraded go-oidfed library to version 0.13.0
 
 ## OFFA 0.6.0
 
