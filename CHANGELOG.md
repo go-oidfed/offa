@@ -1,3 +1,9 @@
+## OFFA 0.6.2
+
+- Upgraded go-oidfed library to version 0.13.2
+  - Fixes application of metadata policy on custom metadata types
+  - Ensures the EC does not publish duplicated kids in `jwks`
+
 ## OFFA 0.6.1
 
 ### Important
