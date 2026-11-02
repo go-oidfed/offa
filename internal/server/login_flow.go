@@ -7,7 +7,7 @@ import (
 	go2 "github.com/adam-hanna/arrayOperations"
 	oidfed "github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/oidfedconst"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	zutils "github.com/zachmann/go-utils"
 
 	"github.com/go-oidfed/offa/internal/cache"
@@ -28,7 +28,7 @@ const (
 
 const browserStateCookieName = "_offa_auth_state"
 
-func doLogin(c *fiber.Ctx, opID, next, loginHint string) error {
+func doLogin(c fiber.Ctx, opID, next, loginHint string) error {
 	opMetadata, err := federationLeafEntity.ResolveOPMetadata(opID)
 	if err != nil {
 		return renderError(c, "could not resolve OP metadata", err.Error())
@@ -62,7 +62,7 @@ func doLogin(c *fiber.Ctx, opID, next, loginHint string) error {
 	)
 }
 
-func codeExchange(c *fiber.Ctx) error {
+func codeExchange(c fiber.Ctx) error {
 	if e := c.Query("error"); e != "" {
 		c.Status(444)
 		return renderError(c, e, c.Query("error_description"))
@@ -100,7 +100,7 @@ func codeExchange(c *fiber.Ctx) error {
 	if next == "" {
 		next = "/"
 	}
-	return c.Redirect(next)
+	return c.Redirect().To(next)
 }
 
 // normalizeClaims converts slice-like values to []string where reasonable.
@@ -128,7 +128,7 @@ type stateData struct {
 	Explicit      bool
 }
 
-func createSessionCookie(c *fiber.Ctx, userData model.UserClaims) error {
+func createSessionCookie(c fiber.Ctx, userData model.UserClaims) error {
 	sessionID, err := zutils.RandomString(128)
 	if err != nil {
 		return err
@@ -150,14 +150,14 @@ func createSessionCookie(c *fiber.Ctx, userData model.UserClaims) error {
 	return nil
 }
 
-func clearState(c *fiber.Ctx, state string) {
+func clearState(c fiber.Ctx, state string) {
 	c.ClearCookie(browserStateCookieName)
 	if err := cache.Set(cache.KeyStateData, state, nil, time.Nanosecond); err != nil {
 		log.WithError(err).Error("failed to clear state cache")
 	}
 }
 
-func loadAndValidateState(c *fiber.Ctx, state string) (stateData, error) {
+func loadAndValidateState(c fiber.Ctx, state string) (stateData, error) {
 	var stateInfo stateData
 	found, err := cache.Get(cache.KeyStateData, state, &stateInfo)
 	if err != nil {

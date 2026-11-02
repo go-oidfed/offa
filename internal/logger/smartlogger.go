@@ -5,7 +5,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
 	"github.com/rs/zerolog"
 )
 
@@ -60,8 +61,8 @@ func newSmartLogger(id string) zerolog.Logger {
 // enabled, the returned logger additionally buffers all entries for the request
 // and flushes them to a dedicated per-request file the first time an error is
 // logged for that request; if no error occurs, no per-request file is created.
-func GetRequestLogger(ctx *fiber.Ctx) *zerolog.Logger {
-	rid, _ := ctx.Locals("requestid").(string)
+func GetRequestLogger(ctx fiber.Ctx) *zerolog.Logger {
+	rid := requestid.FromContext(ctx)
 	return getIDLogger(rid)
 }
 

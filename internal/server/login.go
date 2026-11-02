@@ -9,8 +9,7 @@ import (
 	"github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/apimodel"
 	"github.com/go-oidfed/lib/oidfedconst"
-	"github.com/gofiber/fiber/v2"
-	"github.com/zachmann/go-utils/ctxutils"
+	"github.com/gofiber/fiber/v3"
 
 	"github.com/go-oidfed/offa/internal/config"
 	log "github.com/go-oidfed/offa/internal/logger"
@@ -22,22 +21,33 @@ type postLoginRequest struct {
 	TargetLinkURI string `json:"target_link_uri" form:"target_link_uri" query:"target_link_uri"`
 }
 
+// firstNonEmptyQueryParameter returns the value of the first query parameter
+// among the given names that is set to a non-empty value.
+func firstNonEmptyQueryParameter(c fiber.Ctx, params ...string) string {
+	for _, p := range params {
+		if v := c.Query(p); v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
 func addLoginHandlers(s fiber.Router) {
 	path := config.Get().Server.Paths.Login
 	s.Get(
-		path, func(c *fiber.Ctx) error {
-			opID := ctxutils.FirstNonEmptyQueryParameter(c, "iss", "op", "entity_id", "entity", "issuer")
+		path, func(c fiber.Ctx) error {
+			opID := firstNonEmptyQueryParameter(c, "iss", "op", "entity_id", "entity", "issuer")
 			if opID != "" {
-				next := ctxutils.FirstNonEmptyQueryParameter(c, "target_link_uri", "next")
+				next := firstNonEmptyQueryParameter(c, "target_link_uri", "next")
 				return doLogin(c, opID, next, c.Query("login_hint"))
 			}
 			return showLoginPage(c)
 		},
 	)
 	s.Post(
-		path, func(c *fiber.Ctx) error {
+		path, func(c fiber.Ctx) error {
 			var req postLoginRequest
-			if err := c.BodyParser(&req); err != nil {
+			if err := c.Bind().Body(&req); err != nil {
 				return c.JSON(oidfed.ErrorInvalidRequest("could not parse request parameters: " + err.Error()))
 			}
 			return doLogin(c, req.Issuer, req.TargetLinkURI, req.LoginHint)
@@ -53,7 +63,7 @@ type externalButton struct {
 	CustomCSS string
 }
 
-func showLoginPage(c *fiber.Ctx) error {
+func showLoginPage(c fiber.Ctx) error {
 	next := c.Query("next", config.Get().Federation.EntityID)
 	return render(
 		c, "login", map[string]any{

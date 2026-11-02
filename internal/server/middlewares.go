@@ -5,14 +5,14 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/favicon"
-	"github.com/gofiber/fiber/v2/middleware/filesystem"
-	"github.com/gofiber/fiber/v2/middleware/helmet"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/compress"
+	"github.com/gofiber/fiber/v3/middleware/favicon"
+	"github.com/gofiber/fiber/v3/middleware/helmet"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/gofiber/fiber/v3/middleware/recover"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
+	"github.com/gofiber/fiber/v3/middleware/static"
 
 	"github.com/go-oidfed/offa/internal/config"
 	log "github.com/go-oidfed/offa/internal/logger"
@@ -32,9 +32,9 @@ func addLoggerMiddleware(s fiber.Router) {
 	s.Use(
 		logger.New(
 			logger.Config{
-				Format:     "${time} ${ip} ${ua} ${latency} - ${status} ${method} ${path} ${locals:requestid}\n",
+				Format:     "${time} ${ip} ${ua} ${latency} - ${status} ${method} ${path} ${requestid}\n",
 				TimeFormat: "2006-01-02 15:04:05",
-				Output:     log.MustGetAccessLogger(),
+				Stream:     log.MustGetAccessLogger(),
 			},
 		),
 	)
@@ -92,7 +92,7 @@ func addFaviconMiddleware(s fiber.Router) {
 		favicon.New(
 			favicon.Config{
 				File:       "favicon.ico",
-				FileSystem: http.FS(faviconFS),
+				FileSystem: faviconFS,
 			},
 		),
 	)
@@ -100,13 +100,15 @@ func addFaviconMiddleware(s fiber.Router) {
 
 func addStaticFiles(s fiber.Router) {
 	s.Use(
-		"/static", filesystem.New(
-			filesystem.Config{
-				Root: newLocalAndOtherSearcherFilesystem(
-					joinIfFirstNotEmpty(
-						config.Get().Server.WebOverwriteDir, "static",
-					), http.FS(staticFS),
-				),
+		"/static", static.New(
+			"", static.Config{
+				FS: httpFilesystemFS{
+					hfs: newLocalAndOtherSearcherFilesystem(
+						joinIfFirstNotEmpty(
+							config.Get().Server.WebOverwriteDir, "static",
+						), http.FS(staticFS),
+					),
+				},
 			},
 		),
 	)

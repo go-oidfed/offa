@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	zutils "github.com/zachmann/go-utils"
 	"golang.org/x/oauth2"
 
@@ -17,7 +17,7 @@ import (
 	"github.com/go-oidfed/offa/internal/pkce"
 )
 
-func loginExplicit(c *fiber.Ctx, opID, next, loginHint string) error {
+func loginExplicit(c fiber.Ctx, opID, next, loginHint string) error {
 	log.Debugf("Starting authorization code flow with explicit client registration for %s", opID)
 	oidcRP, err := federationLeafEntity.GetExplicitRegistrationOIDCRP(
 		context.Background(),
@@ -77,11 +77,11 @@ func loginExplicit(c *fiber.Ctx, opID, next, loginHint string) error {
 			Secure:   config.Get().Server.Secure,
 		},
 	)
-	return c.Redirect(authURL, fiber.StatusSeeOther)
+	return c.Redirect().Status(fiber.StatusSeeOther).To(authURL)
 }
 
 func codeExchangeExplicit(
-	c *fiber.Ctx, stateInfo stateData, code string,
+	c fiber.Ctx, stateInfo stateData, code string,
 	clearState func(),
 ) (model.UserClaims, error) {
 	log.Debugf("Doing authorization code exchange with explicit client registration")

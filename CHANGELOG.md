@@ -22,6 +22,14 @@
   - Bounded, parallel local trust-tree resolution with single-pass hint modes
   - `ResolveResponsePayload.ValidUntil` and `ResolveOPMetadata` result caching
   - Split HTTP timeouts (dial/TLS/headers/total) and no timeout retries
+- Migrated `gofiber/fiber/v2` 2.52.15 → `gofiber/fiber/v3` 3.6.1
+  - `fiber.Ctx` is now an interface taken by value in handlers
+  - static asset serving now uses `middleware/static` (replaces `middleware/filesystem`)
+  - the access log request id tag is rendered from the request id context (`${requestid}`)
+  - trusted proxies are configured via `TrustProxy` + `TrustProxyConfig.Proxies`
+  - TLS is served via `Listen(addr, ListenConfig{CertFile, CertKeyFile})`
+- Migrated `gofiber/template/mustache/v2` 2.0.14 → `gofiber/template/mustache/v3` 3.0.0
+
 
 ## OFFA 0.6.2
 

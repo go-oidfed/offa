@@ -8,8 +8,8 @@ require (
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/go-oidfed/lib v0.14.0
 	github.com/go-resty/resty/v2 v2.17.2
-	github.com/gofiber/fiber/v2 v2.52.15
-	github.com/gofiber/template/mustache/v2 v2.0.14
+	github.com/gofiber/fiber/v3 v3.6.1
+	github.com/gofiber/template/mustache/v3 v3.0.0
 	github.com/lestrrat-go/jwx/v4 v4.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.23.0
@@ -26,14 +26,15 @@ require (
 	github.com/TwiN/gocache/v2 v2.4.0 // indirect
 	github.com/cbroglie/mustache v1.4.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/cloudflare/circl v1.6.5 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/eclipse-keypont/crypto11 v1.6.8 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.7 // indirect
-	github.com/gofiber/template v1.8.3 // indirect
+	github.com/gofiber/schema v1.8.8 // indirect
+	github.com/gofiber/template/v2 v2.0.0 // indirect
 	github.com/gofiber/utils v1.2.0 // indirect
+	github.com/gofiber/utils/v2 v2.6.2 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jarcoal/httpmock v1.4.2 // indirect
@@ -50,12 +51,13 @@ require (
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
-	github.com/mattn/go-runewidth v0.0.31 // indirect
 	github.com/miekg/pkcs11 v1.1.2 // indirect
 	github.com/molecule-man/go-brrr v1.3.0 // indirect
+	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/scylladb/go-set v1.0.3-0.20200225121959-cc7b2070d91e // indirect
 	github.com/sirupsen/logrus v1.10.2 // indirect
 	github.com/thales-e-security/pool v0.0.2 // indirect
+	github.com/tinylib/msgp v1.6.5 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.uber.org/atomic v1.12.0 // indirect

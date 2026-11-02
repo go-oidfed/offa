@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/valyala/fasthttp"
 
 	"github.com/go-oidfed/offa/internal/config"
@@ -14,7 +14,7 @@ import (
 
 func addUserPageHandler(s fiber.Router) {
 	s.Get(
-		"/", func(c *fiber.Ctx) error {
+		"/", func(c fiber.Ctx) error {
 			sub := c.Get("X-Forwarded-Sub")
 			if sub != "" {
 				return renderHeaders(c, c.GetReqHeaders())
@@ -50,14 +50,14 @@ func addUserPageHandler(s fiber.Router) {
 			}
 			if fasthttp.StatusCodeIsRedirect(resp.StatusCode) {
 				c.Status(resp.StatusCode)
-				return c.Redirect(resp.Header.Get(fiber.HeaderLocation))
+				return c.Redirect().To(resp.Header.Get(fiber.HeaderLocation))
 			}
 			return renderError(c, "error", string(body))
 		},
 	)
 }
 
-func renderHeaders(c *fiber.Ctx, headers map[string][]string) error {
+func renderHeaders(c fiber.Ctx, headers map[string][]string) error {
 	type headerData struct {
 		Header string
 		Value  string

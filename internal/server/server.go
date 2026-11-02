@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/jwx"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 
 	"github.com/go-oidfed/offa/internal"
 	"github.com/go-oidfed/offa/internal/config"
@@ -25,7 +25,6 @@ var serverConfig = fiber.Config{
 	ReadBufferSize: 8192,
 	// WriteBufferSize: 4096,
 	ErrorHandler: handleError,
-	Network:      "tcp",
 }
 
 var federationLeafEntity *oidfed.FederationLeaf
@@ -40,8 +39,8 @@ func Init() {
 	initHtmls()
 	initFederationEntity()
 	if tps := config.Get().Server.TrustedProxies; len(tps) > 0 {
-		serverConfig.TrustedProxies = config.Get().Server.TrustedProxies
-		serverConfig.EnableTrustedProxyCheck = true
+		serverConfig.TrustProxy = true
+		serverConfig.TrustProxyConfig.Proxies = tps
 	}
 	serverConfig.ProxyHeader = config.Get().Server.ForwardedIPHeader
 	server = fiber.New(serverConfig)
@@ -158,30 +157,43 @@ func initFederationEntity() {
 func start(s *fiber.App) {
 	if !config.Get().Server.TLS.Enabled {
 		log.WithField("port", config.Get().Server.Port).Info("TLS is disabled starting http server")
-		log.WithError(s.Listen(fmt.Sprintf("%s:%d", config.Get().Server.IPListen, config.Get().Server.Port))).Fatal()
+		log.WithError(
+			s.Listen(
+				fmt.Sprintf("%s:%d", config.Get().Server.IPListen, config.Get().Server.Port),
+				fiber.ListenConfig{ListenerNetwork: "tcp"},
+			),
+		).Fatal()
 	}
 	// TLS enabled
 	if config.Get().Server.TLS.RedirectHTTP {
 		httpServer := fiber.New(serverConfig)
 		httpServer.All(
-			"*", func(ctx *fiber.Ctx) error {
+			"*", func(ctx fiber.Ctx) error {
 				//goland:noinspection HttpUrlsUsage
-				return ctx.Redirect(
-					strings.Replace(ctx.Request().URI().String(), "http://", "https://", 1),
-					fiber.StatusPermanentRedirect,
+				return ctx.Redirect().Status(fiber.StatusPermanentRedirect).To(
+					strings.Replace(
+						ctx.Request().URI().String(), "http://", "https://", 1,
+					),
 				)
 			},
 		)
 		log.Info("TLS and http redirect enabled, starting redirect server on port 80")
 		go func() {
-			log.WithError(httpServer.Listen(config.Get().Server.IPListen + ":80")).Fatal()
+			log.WithError(
+				httpServer.Listen(
+					config.Get().Server.IPListen+":80", fiber.ListenConfig{ListenerNetwork: "tcp"},
+				),
+			).Fatal()
 		}()
 	}
 	time.Sleep(time.Millisecond) // This is just for a more pretty output with the tls header printed after the http one
 	log.Info("TLS enabled, starting https server on port 443")
 	log.WithError(
-		s.ListenTLS(
-			config.Get().Server.IPListen+":443", config.Get().Server.TLS.Cert, config.Get().Server.TLS.Key,
+		s.Listen(
+			config.Get().Server.IPListen+":443", fiber.ListenConfig{
+				CertFile:    config.Get().Server.TLS.Cert,
+				CertKeyFile: config.Get().Server.TLS.Key,
+			},
 		),
 	).Fatal()
 }

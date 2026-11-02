@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	oidfed "github.com/go-oidfed/lib"
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-oidfed/lib"
+	"github.com/gofiber/fiber/v3"
 	"github.com/lestrrat-go/jwx/v4/jwk"
 	"github.com/lestrrat-go/jwx/v4/jws"
 	"github.com/pkg/errors"
@@ -24,7 +24,7 @@ import (
 	"github.com/go-oidfed/offa/internal/pkce"
 )
 
-func loginAutomatic(c *fiber.Ctx, opID, next, loginHint string) error {
+func loginAutomatic(c fiber.Ctx, opID, next, loginHint string) error {
 	log.Debugf("Starting authorization code flow with automatic client registration for %s", opID)
 	r, err := zutils.RandomString(256)
 	if err != nil {
@@ -78,10 +78,10 @@ func loginAutomatic(c *fiber.Ctx, opID, next, loginHint string) error {
 			Secure:   config.Get().Server.Secure,
 		},
 	)
-	return c.Redirect(authURL, fiber.StatusSeeOther)
+	return c.Redirect().Status(fiber.StatusSeeOther).To(authURL)
 }
 
-func codeExchangeAutomatic(c *fiber.Ctx, stateInfo stateData, code string, clearState func()) (
+func codeExchangeAutomatic(c fiber.Ctx, stateInfo stateData, code string, clearState func()) (
 	model.UserClaims, error,
 ) {
 	log.Debugf("Doing authorization code exchange with automatic client registration")

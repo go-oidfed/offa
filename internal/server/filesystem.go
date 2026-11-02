@@ -130,6 +130,18 @@ func (lfs searcherFilesystem) Open(name string) (http.File, error) {
 	return sf, err
 }
 
+// httpFilesystemFS adapts an http.FileSystem to fs.FS. It is used to hand the
+// searcherFilesystem (an http.FileSystem) to the fiber v3 static middleware,
+// which serves from fs.FS.
+type httpFilesystemFS struct {
+	hfs http.FileSystem
+}
+
+// Open implements fs.FS.
+func (a httpFilesystemFS) Open(name string) (fs.File, error) {
+	return a.hfs.Open(name)
+}
+
 // newLocalAndOtherSearcherFilesystem creates a searcherFilesystem from a local basePath (
 // if not empty) and other http.FileSystems. The local fs will be the first one.
 func newLocalAndOtherSearcherFilesystem(basePath string, other ...http.FileSystem) searcherFilesystem {

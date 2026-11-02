@@ -7,7 +7,7 @@ import (
 	"slices"
 
 	"github.com/go-oidfed/lib"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/zachmann/go-utils/sliceutils"
 
 	"github.com/go-oidfed/offa/internal/cache"
@@ -18,10 +18,10 @@ import (
 
 func addAuthHandlers(s fiber.Router) {
 	path := config.Get().Server.Paths.ForwardAuth
-	s.Head(path, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
-	s.Options(path, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
+	s.Head(path, func(c fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
+	s.Options(path, func(c fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
 	s.All(
-		path, func(c *fiber.Ctx) error {
+		path, func(c fiber.Ctx) error {
 			if config.Get().DebugAuth {
 				fmt.Println("---")
 				fmt.Println("Auth Request")
@@ -122,7 +122,7 @@ func verifyUser(
 }
 
 func setHeaders(
-	c *fiber.Ctx, headerPrefix string, headerClaims map[string]oidfed.SliceOrSingleValue[model.Claim],
+	c fiber.Ctx, headerPrefix string, headerClaims map[string]oidfed.SliceOrSingleValue[model.Claim],
 	userInfos model.UserClaims,
 ) {
 	if headerClaims == nil && headerPrefix == "" {
@@ -170,7 +170,7 @@ func validateSession(sessionKey string) (claims model.UserClaims, err error) {
 	return
 }
 
-func redirectNext(c *fiber.Ctx, forHost, forPath string, ruleRedirectStatusCode int) error {
+func redirectNext(c fiber.Ctx, forHost, forPath string, ruleRedirectStatusCode int) error {
 	next := url.URL{
 		Scheme: c.Get(fiber.HeaderXForwardedProto),
 		Host:   forHost,
@@ -180,7 +180,5 @@ func redirectNext(c *fiber.Ctx, forHost, forPath string, ruleRedirectStatusCode 
 	if st == 0 {
 		st = http.StatusSeeOther
 	}
-	return c.Redirect(
-		fmt.Sprintf("%s?next=%s", fullLoginPath, next.String()), st,
-	)
+	return c.Redirect().Status(st).To(fmt.Sprintf("%s?next=%s", fullLoginPath, next.String()))
 }
