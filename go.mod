@@ -9,12 +9,12 @@ require (
 	github.com/go-oidfed/lib v0.14.0
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/gofiber/fiber/v3 v3.6.1
-	github.com/gofiber/template/mustache/v3 v3.0.0
+	github.com/gofiber/template/mustache/v3 v3.1.4
 	github.com/lestrrat-go/jwx/v4 v4.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.23.0
 	github.com/rs/zerolog v1.35.1
-	github.com/valyala/fasthttp v1.76.0
+	github.com/valyala/fasthttp v1.77.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/zachmann/go-utils v0.0.0-20260709061248-d06e3e0557c4
 	golang.org/x/oauth2 v0.37.0
@@ -24,17 +24,16 @@ require (
 require (
 	filippo.io/mldsa v1.0.0 // indirect
 	github.com/TwiN/gocache/v2 v2.4.0 // indirect
-	github.com/cbroglie/mustache v1.4.0 // indirect
+	github.com/cbroglie/mustache v1.4.2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudflare/circl v1.6.5 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/eclipse-keypont/crypto11 v1.6.8 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.7 // indirect
-	github.com/gofiber/schema v1.8.8 // indirect
-	github.com/gofiber/template/v2 v2.0.0 // indirect
-	github.com/gofiber/utils v1.2.0 // indirect
-	github.com/gofiber/utils/v2 v2.6.2 // indirect
+	github.com/gofiber/schema v1.9.2 // indirect
+	github.com/gofiber/template/v2 v2.1.5 // indirect
+	github.com/gofiber/utils/v2 v2.6.3 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jarcoal/httpmock v1.4.2 // indirect
@@ -52,8 +51,8 @@ require (
 	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/miekg/pkcs11 v1.1.2 // indirect
-	github.com/molecule-man/go-brrr v1.3.0 // indirect
-	github.com/philhofer/fwd v1.2.0 // indirect
+	github.com/molecule-man/go-brrr v1.3.1 // indirect
+	github.com/philhofer/fwd v1.2.1 // indirect
 	github.com/scylladb/go-set v1.0.3-0.20200225121959-cc7b2070d91e // indirect
 	github.com/sirupsen/logrus v1.10.2 // indirect
 	github.com/thales-e-security/pool v0.0.2 // indirect
