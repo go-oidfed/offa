@@ -1,8 +1,6 @@
 package internal
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/apimodel"
 
@@ -18,16 +16,18 @@ func metadataResolverProducer() *oidfed.RequestObjectProducer {
 	)
 }
 
-// multiEndpointResolver is an oidfed.MetadataResolver that tries one or more
-// explicitly configured resolve endpoints in order. If none succeeds it either
-// falls back to smart (per-trust-anchor) resolving followed by local resolving
-// (strategy "smart"), or propagates the last error (strategy "strict").
+// multiEndpointResolver is an oidfed.MetadataResolver that races the
+// explicitly configured resolve endpoints concurrently (see
+// oidfed.ParallelMetadataResolver) and, when they all fail, either falls back
+// to smart (per-trust-anchor) resolving followed by local resolving (strategy
+// "smart"), or propagates the last error (strategy "strict").
 type multiEndpointResolver struct {
-	endpoints []oidfed.SimpleRemoteMetadataResolver
+	// endpoints races the configured resolve endpoints with a bounded deadline
+	// and grace period, so one slow or unresponsive endpoint can no longer
+	// delay a fast valid one.
+	endpoints oidfed.ParallelMetadataResolver
 	// fallback, when non-nil, is used after all endpoints fail (smart strategy).
 	fallback oidfed.SmartRemoteMetadataResolver
-	// producer is the client-auth producer shared with DefaultClientAuth.
-	producer *oidfed.RequestObjectProducer
 	strict   bool
 }
 
@@ -51,7 +51,7 @@ func SetupMetadataResolver() {
 		return
 	}
 
-	endpoints := make([]oidfed.SimpleRemoteMetadataResolver, len(conf.Federation.ExternalResolver.Endpoints))
+	endpoints := make([]oidfed.MetadataResolver, len(conf.Federation.ExternalResolver.Endpoints))
 	for i, e := range conf.Federation.ExternalResolver.Endpoints {
 		var epProducer *oidfed.RequestObjectProducer
 		if e.ClientAuth.Enabled {
@@ -64,12 +64,15 @@ func SetupMetadataResolver() {
 	}
 	strict := conf.Federation.ExternalResolver.Strategy == config.ExternalResolverStrategyStrict
 	oidfed.DefaultMetadataResolver = multiEndpointResolver{
-		endpoints: endpoints,
+		endpoints: oidfed.ParallelMetadataResolver{
+			Resolvers:   endpoints,
+			Deadline:    conf.Federation.ExternalResolver.Timeout.Duration(),
+			GracePeriod: conf.Federation.ExternalResolver.Grace.Duration(),
+		},
 		fallback: oidfed.SmartRemoteMetadataResolver{
 			ClientAuth: &oidfed.RemoteResolverClientAuth{ROProducer: producer},
 		},
-		producer: producer,
-		strict:   strict,
+		strict: strict,
 	}
 }
 
@@ -86,31 +89,21 @@ func (r multiEndpointResolver) Resolve(req apimodel.ResolveRequest) (*oidfed.Met
 func (r multiEndpointResolver) ResolveResponsePayload(req apimodel.ResolveRequest) (
 	oidfed.ResolveResponsePayload, error,
 ) {
-	var lastErr error
-	for _, ep := range r.endpoints {
-		res, err := ep.ResolveResponsePayload(req)
-		if err != nil {
-			lastErr = err
-			continue
+	res, err := r.endpoints.ResolveResponsePayload(req)
+	if err != nil {
+		if !r.strict {
+			return r.fallback.ResolveResponsePayload(req)
 		}
-		return res, nil
+		return oidfed.ResolveResponsePayload{}, err
 	}
-	if !r.strict {
-		return r.fallback.ResolveResponsePayload(req)
-	}
-	if lastErr == nil {
-		lastErr = errors.New("external resolver: no configured resolve endpoint succeeded")
-	}
-	return oidfed.ResolveResponsePayload{}, lastErr
+	return res, nil
 }
 
 // ResolvePossible implements oidfed.MetadataResolver.
 func (r multiEndpointResolver) ResolvePossible(req apimodel.ResolveRequest) (bool, bool) {
-	for _, ep := range r.endpoints {
-		validContained, invalidConfirmed := ep.ResolvePossible(req)
-		if validContained || invalidConfirmed {
-			return validContained, invalidConfirmed
-		}
+	validConfirmed, invalidConfirmed := r.endpoints.ResolvePossible(req)
+	if validConfirmed || invalidConfirmed {
+		return validConfirmed, invalidConfirmed
 	}
 	if !r.strict {
 		return r.fallback.ResolvePossible(req)

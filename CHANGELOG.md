@@ -1,3 +1,28 @@
+## OFFA 0.7.0
+
+### Enhancements
+- **Configured resolve endpoints are now raced in parallel.** The
+  `federation.external_resolver` endpoints are resolved concurrently through the
+  library's `ParallelMetadataResolver` instead of strictly in order: a slow or
+  unresponsive endpoint can no longer delay a fast valid one, and the whole
+  endpoint stage is bounded by a configurable deadline. The `smart`/`strict`
+  fallback semantics are unchanged.
+- **`federation.external_resolver.timeout` / `.grace`.** `timeout` bounds the
+  total time a resolve attempt may spend across the configured endpoints;
+  `grace` is how long it keeps waiting after the first endpoint succeeded for a
+  better (shorter) chain. Both use the library defaults (15s / 1s) when 0.
+- **Bounded local resolution.** The local trust-tree build (used when no
+  endpoints are configured, or by the `smart` fallback) is now parallel and
+  bounded in the library (deadline + grace cutoff), and `ResolveOPMetadata`
+  results are cached for half of their remaining lifetime.
+
+### Dependencies
+- Upgraded go-oidfed library to version 0.14.0
+  - `ParallelMetadataResolver` for racing resolve endpoints
+  - Bounded, parallel local trust-tree resolution with single-pass hint modes
+  - `ResolveResponsePayload.ValidUntil` and `ResolveOPMetadata` result caching
+  - Split HTTP timeouts (dial/TLS/headers/total) and no timeout retries
+
 ## OFFA 0.6.2
 
 - Upgraded go-oidfed library to version 0.13.2

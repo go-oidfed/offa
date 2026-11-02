@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/pkg/errors"
+	"github.com/zachmann/go-utils/duration"
 	"gopkg.in/yaml.v3"
 )
 
@@ -40,9 +41,16 @@ type externalResolverEntry struct {
 // The legacy federation.use_resolve_endpoint boolean is normalized into Enabled
 // in MustLoadConfig; when both are set the explicit object's Enabled wins.
 type externalResolverConf struct {
-	Enabled   bool                     `yaml:"enabled"`
-	Strategy  externalResolverStrategy `yaml:"strategy"`
-	Endpoints []externalResolverEntry  `yaml:"endpoints"`
+	Enabled  bool                     `yaml:"enabled"`
+	Strategy externalResolverStrategy `yaml:"strategy"`
+	// Timeout bounds the total time a single resolve attempt may spend across
+	// the configured endpoints; 0 means the library default (15s).
+	Timeout duration.DurationOption `yaml:"timeout"`
+	// Grace is how long the resolver keeps waiting after the first endpoint
+	// succeeded for a better (shorter) trust chain; 0 means the library
+	// default (1s).
+	Grace     duration.DurationOption `yaml:"grace"`
+	Endpoints []externalResolverEntry `yaml:"endpoints"`
 
 	// present records whether the external_resolver key appeared in the YAML at
 	// all, so normalization can distinguish "object absent" (legacy bool
@@ -59,7 +67,8 @@ func (c *externalResolverConf) UnmarshalYAML(value *yaml.Node) error {
 }
 
 // validate checks the external resolver configuration: strategy must be known,
-// and each non-empty endpoint must have a URL, with duplicate URLs rejected.
+// timeouts must not be negative, and each non-empty endpoint must have a URL,
+// with duplicate URLs rejected.
 func (c externalResolverConf) validate() error {
 	switch c.Strategy {
 	case "", ExternalResolverStrategySmart, ExternalResolverStrategyStrict:
@@ -69,6 +78,12 @@ func (c externalResolverConf) validate() error {
 			"federation.external_resolver.strategy %q is invalid; supported: smart, strict",
 			c.Strategy,
 		)
+	}
+	if c.Timeout.Duration() < 0 {
+		return errors.New("federation.external_resolver.timeout must not be negative")
+	}
+	if c.Grace.Duration() < 0 {
+		return errors.New("federation.external_resolver.grace must not be negative")
 	}
 	seen := make(map[string]struct{}, len(c.Endpoints))
 	for _, e := range c.Endpoints {

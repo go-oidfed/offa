@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/lestrrat-go/jwx/v4/jwa"
 
@@ -92,16 +93,24 @@ func TestSetupMetadataResolver_CompositeEndpoints(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected multiEndpointResolver, got %T", oidfed.DefaultMetadataResolver)
 	}
-	if len(comp.endpoints) != 2 {
-		t.Fatalf("expected 2 endpoints, got %d", len(comp.endpoints))
+	if len(comp.endpoints.Resolvers) != 2 {
+		t.Fatalf("expected 2 endpoints, got %d", len(comp.endpoints.Resolvers))
 	}
-	if comp.endpoints[0].ResolveEndpoint != "https://resolve1.example.com/resolve" {
-		t.Fatalf("endpoint 0: %q", comp.endpoints[0].ResolveEndpoint)
+	ep0, ok := comp.endpoints.Resolvers[0].(oidfed.SimpleRemoteMetadataResolver)
+	if !ok {
+		t.Fatalf("endpoint 0 is %T, want SimpleRemoteMetadataResolver", comp.endpoints.Resolvers[0])
 	}
-	if comp.endpoints[0].ClientAuth == nil {
+	if ep0.ResolveEndpoint != "https://resolve1.example.com/resolve" {
+		t.Fatalf("endpoint 0: %q", ep0.ResolveEndpoint)
+	}
+	if ep0.ClientAuth == nil {
 		t.Fatalf("endpoint 0 should have client auth enabled (non-nil producer)")
 	}
-	if comp.endpoints[1].ClientAuth != nil {
+	ep1, ok := comp.endpoints.Resolvers[1].(oidfed.SimpleRemoteMetadataResolver)
+	if !ok {
+		t.Fatalf("endpoint 1 is %T, want SimpleRemoteMetadataResolver", comp.endpoints.Resolvers[1])
+	}
+	if ep1.ClientAuth != nil {
 		t.Fatalf("endpoint 1 should have client auth disabled (nil producer)")
 	}
 	if !comp.strict {
@@ -203,4 +212,43 @@ func TestMultiEndpointResolver_EndToEndSmoke(t *testing.T) {
 	if claims["aud"] != srv.URL {
 		t.Fatalf("aud: %v", claims["aud"])
 	}
+}
+
+// TestMultiEndpointResolver_RespectsConfigDeadline proves the configured
+// external_resolver.timeout is wired into the ParallelMetadataResolver: an
+// endpoint that never answers must not hold the resolve beyond the configured
+// deadline, even though the underlying HTTP request has not timed out yet.
+func TestMultiEndpointResolver_RespectsConfigDeadline(t *testing.T) {
+	started := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		close(started)
+		<-r.Context().Done() // block until the connection is torn down
+	}))
+	defer srv.Close()
+
+	setupResolverTest(t, "  external_resolver:\n"+
+		"    enabled: true\n"+
+		"    strategy: strict\n"+
+		"    timeout: 2s\n"+
+		"    endpoints:\n"+
+		"      - url: "+srv.URL+"\n")
+	SetupMetadataResolver()
+
+	start := time.Now()
+	_, err := oidfed.DefaultMetadataResolver.ResolveResponsePayload(
+		apimodel.ResolveRequest{
+			Subject:     "https://op.example.org",
+			TrustAnchor: []string{"https://ta.example.org"},
+		},
+	)
+	elapsed := time.Since(start)
+	if err == nil {
+		t.Fatalf("expected the unresponsive endpoint to fail")
+	}
+	if elapsed >= 4*time.Second {
+		t.Fatalf("configured timeout not honored: resolve took %v", elapsed)
+	}
+	<-started
+	// Abort the still in-flight HTTP request so srv.Close() returns promptly.
+	srv.CloseClientConnections()
 }

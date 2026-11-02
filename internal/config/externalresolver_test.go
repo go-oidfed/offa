@@ -4,7 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/zachmann/go-utils/duration"
 	"gopkg.in/yaml.v3"
 )
 
@@ -29,6 +31,8 @@ func TestExternalResolverConf_Decode(t *testing.T) {
 	src := `
 enabled: true
 strategy: strict
+timeout: 10s
+grace: 500ms
 endpoints:
   - url: https://resolve1.example.com/resolve
     client_auth:
@@ -43,6 +47,12 @@ endpoints:
 	}
 	if c.Strategy != ExternalResolverStrategyStrict {
 		t.Fatalf("strategy: %q", c.Strategy)
+	}
+	if c.Timeout.Duration() != 10*time.Second {
+		t.Fatalf("timeout: %v", c.Timeout.Duration())
+	}
+	if c.Grace.Duration() != 500*time.Millisecond {
+		t.Fatalf("grace: %v", c.Grace.Duration())
 	}
 	if len(c.Endpoints) != 2 {
 		t.Fatalf("endpoints: %d", len(c.Endpoints))
@@ -82,6 +92,14 @@ func TestExternalResolverConf_ValidateErrors(t *testing.T) {
 					{URL: "https://a.example/resolve"}, {URL: "https://a.example/resolve"},
 				},
 			},
+		},
+		{
+			name: "negative timeout",
+			conf: externalResolverConf{Enabled: true, Timeout: duration.DurationOption(-time.Second)},
+		},
+		{
+			name: "negative grace",
+			conf: externalResolverConf{Enabled: true, Grace: duration.DurationOption(-time.Second)},
 		},
 	}
 	for _, tc := range cases {

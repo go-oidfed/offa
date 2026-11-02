@@ -613,6 +613,8 @@ It is generally more performant to rely on an external resolver.
         external_resolver:
           enabled: true
           strategy: strict
+          timeout: 15s
+          grace: 1s
           endpoints:
             - url: https://resolver.example.com/federation_resolve
               client_auth:
@@ -639,12 +641,34 @@ endpoint succeeds. It can be one of:
   resolving.
 - `strict`: propagates the last error without any fallback.
 
+### `timeout`
+<span class="badge badge-purple" title="Value Type">duration</span>
+<span class="badge badge-blue" title="Default Value">`15s`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `timeout` option bounds the total time a single resolve attempt may spend
+across all configured endpoints (e.g. `10s`). The configured endpoints are
+queried concurrently, so a slow or unresponsive endpoint cannot hold up a fast
+valid one; when the timeout elapses without a success the resolver falls back
+according to [`strategy`](#strategy). `0` uses the library default (15s).
+
+### `grace`
+<span class="badge badge-purple" title="Value Type">duration</span>
+<span class="badge badge-blue" title="Default Value">`1s`</span>
+<span class="badge badge-green" title="If this option is required or optional">optional</span>
+
+The `grace` option is how long the resolver keeps waiting after the first
+endpoint succeeded for another endpoint to return a better (shorter) trust
+chain before finalizing the result (e.g. `500ms`). Larger values prefer better
+chains at the cost of latency; `0` uses the library default (1s).
+
 ### `endpoints`
 <span class="badge badge-purple" title="Value Type">list</span>
 <span class="badge badge-green" title="If this option is required or optional">optional</span>
 
-The `endpoints` option lists explicit resolve endpoint URLs, tried in the
-configured order.
+The `endpoints` option lists explicit resolve endpoint URLs. They are queried
+concurrently — unlike a strictly ordered list, one slow or unreachable endpoint
+does not delay the others.
 
 When `endpoints` is empty, OFFA auto-discovers the resolve endpoints from its
 trust anchors' Entity Configurations and uses `private_key_jwt` authentication
