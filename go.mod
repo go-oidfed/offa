@@ -8,7 +8,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/go-oidfed/lib v0.14.0
 	github.com/go-resty/resty/v2 v2.17.2
-	github.com/gofiber/fiber/v3 v3.6.1
+	github.com/gofiber/fiber/v3 v3.7.0
 	github.com/gofiber/template/mustache/v3 v3.1.5
 	github.com/lestrrat-go/jwx/v4 v4.6.0
 	github.com/pkg/errors v0.9.1
@@ -31,7 +31,7 @@ require (
 	github.com/eclipse-keypont/crypto11 v1.6.8 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.7 // indirect
-	github.com/gofiber/schema v1.9.2 // indirect
+	github.com/gofiber/schema v1.9.3 // indirect
 	github.com/gofiber/template/v2 v2.1.6 // indirect
 	github.com/gofiber/utils/v2 v2.6.4 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
